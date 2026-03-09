@@ -323,6 +323,12 @@
                 <button type="submit" class="btn-primary">ENVIAR CONSULTA</button>
             </form>
         </div>
+
+        <div id="install-card" class="card" style="display: none; border-color: var(--primary);">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">Instalar Aplicación</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 15px;">Instala BilleteSeguro en tu pantalla de inicio para acceso rápido y offline.</p>
+            <button id="install-button" class="btn-primary">INSTALAR AHORA</button>
+        </div>
     </div>
 
     <!-- Result Panel -->
@@ -444,6 +450,33 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js');
         }
+
+        // Lógica de Instalación PWA
+        let deferredPrompt;
+        const installCard = document.getElementById('install-card');
+        const installButton = document.getElementById('install-button');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installCard.style.display = 'block';
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installCard.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installCard.style.display = 'none';
+            deferredPrompt = null;
+        });
     </script>
 </body>
 </html>
