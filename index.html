@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BilleteSeguro BOB</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BilleteSafe">
@@ -389,7 +390,7 @@
         }
 
         const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+        const config = { fps: 15 };
 
         function onScanSuccess(decodedText) {
             console.log("Escaneado:", decodedText);
