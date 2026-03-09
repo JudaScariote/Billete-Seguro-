@@ -126,16 +126,15 @@
             letter-spacing: 1.5px;
         }
 
-        /* 3. Navbar - Aesthetic & Minimal */
         .navbar {
-            height: 85px;
+            height: 90px; /* Slightly taller to accommodate padding */
             background: rgba(10, 10, 10, 0.85);
             backdrop-filter: blur(25px);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding-bottom: 15px;
+            padding-bottom: 25px; /* Aumentado para no chocar con la franja de abajo de Android/iOS */
             z-index: 1000;
         }
 
@@ -155,13 +154,13 @@
         }
 
         .nav-icon svg {
-            width: 28px;
-            height: 28px;
+            width: 22px; /* Reducido al 80% aprox (original 28px) */
+            height: 22px;
             stroke-width: 2;
         }
 
         .nav-label {
-            font-size: 10px;
+            font-size: 9px; /* Ajustado sutilmente */
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
