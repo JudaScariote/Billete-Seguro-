@@ -447,8 +447,9 @@
             const ctx = canvas.getContext('2d');
 
             try {
+                // Constraints simplificadas para máxima compatibilidad en móviles
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+                    video: { facingMode: "environment" } 
                 });
                 video.srcObject = stream;
                 
@@ -469,9 +470,20 @@
             }
 
             isProcessing = true;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
+
+            // Escalar la imagen (50%) para acelerar MASIVAMENTE a Tesseract en móviles
+            const scale = 0.5;
+            canvas.width = video.videoWidth * scale;
+            canvas.height = video.videoHeight * scale;
+            
+            // Si el video aún no tiene dimensiones válidas, reintentar
+            if (canvas.width === 0) {
+                isProcessing = false;
+                requestAnimationFrame(() => processFrame(video, canvas, ctx));
+                return;
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             try {
                 const { data: { text } } = await ocrWorker.recognize(canvas);
@@ -510,6 +522,7 @@
             const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-Z])\b/i);
             
             const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
+            const denomTextMatch = text.match(/\b(DIEZ|VEINTE|CINCUENTA|CIEN|DOSCIENTOS)\b/i);
 
             if (matchFormat1 || matchFormat2) {
                 let series = "";
@@ -523,7 +536,17 @@
                     serial = matchFormat2[1];
                 }
 
-                const denom = denomMatch ? denomMatch[1] : "Desconocido";
+                let denom = "Desconocido";
+                if (denomMatch) {
+                    denom = denomMatch[1];
+                } else if (denomTextMatch) {
+                    const word = denomTextMatch[1].toUpperCase();
+                    if (word === "DIEZ") denom = "10";
+                    if (word === "VEINTE") denom = "20";
+                    if (word === "CINCUENTA") denom = "50";
+                    if (word === "CIEN") denom = "100";
+                    if (word === "DOSCIENTOS") denom = "200";
+                }
 
                 const result = validateBolivianBill(series, denom, serial);
                 
