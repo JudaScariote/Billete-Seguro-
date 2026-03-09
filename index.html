@@ -14,7 +14,7 @@
             --primary: #00f3ff;
             --bg: #0a0a0a;
             --surface: #1a1a1a;
-            --surface-glass: rgba(10, 10, 10, 0.7);
+            --surface-glass: rgba(10, 10, 10, 0.6);
             --text: #ffffff;
             --text-secondary: #a0a0a0;
             --error: #ff4d4d;
@@ -30,7 +30,7 @@
         }
 
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('bg_live.jpg');
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('bg_live.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -42,31 +42,31 @@
             position: relative;
         }
 
-        /* 1. Header Section - Clean and Centered */
+        /* 1. Header - Centered Logo and Title */
         .header {
-            padding: 40px 20px 20px;
+            padding: 60px 20px 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             z-index: 100;
         }
 
         .logo-img {
-            width: 120px;
+            width: 130px;
             height: auto;
-            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4));
+            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.3));
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            text-transform: uppercase;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
-        /* 2. Scanner Container - Perfectly Proportioned */
+        /* 2. Scanner - Unified and Clean */
         #scanner-container {
             flex: 1;
             width: 100%;
@@ -74,7 +74,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
+            padding-bottom: 80px;
             z-index: 10;
         }
 
@@ -84,8 +84,8 @@
             position: relative;
             border-radius: 20px;
             overflow: hidden;
-            background: rgba(0, 0, 0, 0.8);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            background: #000;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
         }
 
         #reader {
@@ -100,7 +100,7 @@
             object-fit: cover !important;
         }
 
-        /* Scan Line Animation - Clean Minimalist */
+        /* Oscillating Scan Line */
         @keyframes scanSlide {
             0% { transform: translateY(0); opacity: 0; }
             10% { opacity: 1; }
@@ -114,7 +114,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: #00f3ff;
             box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff;
             z-index: 20;
@@ -122,28 +122,28 @@
         }
 
         .scan-badge {
-            margin-top: 25px;
+            margin-top: 30px;
             background: var(--surface-glass);
             backdrop-filter: blur(10px);
-            padding: 8px 24px;
-            border-radius: 20px;
+            padding: 10px 24px;
+            border-radius: 25px;
             border: 1px solid rgba(0, 243, 255, 0.2);
         }
 
         .scan-badge p {
             color: var(--primary);
             font-weight: 700;
-            font-size: 11px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* 3. Bottom Navbar - Professional Proportions */
+        /* 3. Navbar - Standard Proportions */
         .navbar {
             height: 85px;
             background: var(--surface-glass);
             backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -155,7 +155,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.2s;
@@ -167,19 +167,19 @@
         }
 
         .nav-icon svg {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             stroke-width: 2;
         }
 
         .nav-label {
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        /* Modals & Result Views */
+        /* Modals & Cards */
         .modal {
             position: fixed;
             top: 0;
@@ -187,7 +187,7 @@
             width: 100%;
             height: 100%;
             background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             z-index: 2000;
             display: none;
             flex-direction: column;
@@ -207,6 +207,15 @@
             padding-top: 20px;
         }
 
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 16px;
+        }
+
         #result-panel {
             position: fixed;
             bottom: 0;
@@ -215,22 +224,14 @@
             background: var(--surface);
             border-top-left-radius: 30px;
             border-top-right-radius: 30px;
-            padding: 24px 24px 100px;
+            padding: 30px 24px 100px;
             transform: translateY(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1500;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.8);
         }
 
         #result-panel.active { transform: translateY(0); }
-
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 16px;
-        }
 
         .btn-primary {
             background: var(--primary);
@@ -239,9 +240,20 @@
             padding: 16px;
             border-radius: 14px;
             font-weight: 800;
-            font-size: 14px;
+            font-size: 15px;
             width: 100%;
             cursor: pointer;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 14px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
         #reader__dashboard { display: none !important; }
@@ -252,7 +264,7 @@
 <body>
 
     <div class="header">
-        <img src="logo_full.png" class="logo-img" alt="BilleteSeguro">
+        <img src="logo_final.png" class="logo-img" alt="BilleteSeguro">
         <h1>BilleteSeguro BOB</h1>
     </div>
 
@@ -263,7 +275,7 @@
         </div>
 
         <div class="scan-badge">
-            <p id="status-label">Escaneando...</p>
+            <p id="status-label">Analizando...</p>
         </div>
     </div>
 
@@ -288,11 +300,11 @@
         <div class="nav-item" onclick="toggleModal('support-modal')">
             <div class="nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 16v-4m0-4h.01" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
             </div>
-            <div class="nav-label">Soporte</div>
+            <div class="nav-label">Apoyo</div>
         </div>
     </nav>
 
@@ -305,38 +317,40 @@
         <div id="history-list"></div>
     </div>
 
-    <!-- Support Modal -->
+    <!-- Support Modal - RESTORED -->
     <div id="support-modal" class="modal">
         <div class="modal-header">
-            <h2>Soporte</h2>
+            <h2>Apoyo al Creador</h2>
             <div onclick="toggleModal('support-modal')" style="color: var(--primary); font-weight: 700;">CERRAR</div>
         </div>
+
         <div class="card" style="text-align: center;">
-            <p style="color: var(--primary); font-weight: 800; font-size: 12px; margin-bottom: 20px;">AYUDA AL CREADOR</p>
-            <div style="background: white; padding: 10px; border-radius: 12px; display: inline-block;">
-                <img src="qr_apoyo.jpg" style="width: 200px; height: 200px; object-fit: contain;">
+            <p style="color: var(--primary); font-weight: 800; font-size: 12px; margin-bottom: 20px;">ESCANEA PARA APOYAR AL CREADOR</p>
+            <div style="background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px;">
+                <img src="qr_apoyo.jpg" style="width: 250px; height: 250px; object-fit: contain;">
             </div>
+            <p style="color: var(--text-secondary); font-size: 13px;">Tu contribución ayuda a seguir mejorando</p>
         </div>
-        <form action="https://formspree.io/f/xvgzgeyw" method="POST" class="card">
-            <div style="margin-bottom: 12px;">
-                <input type="email" name="email" placeholder="Tu Correo" style="width:100%; padding:12px; background:#252525; border:1px solid #333; border-radius:10px; color:white;" required>
-            </div>
-            <div style="margin-bottom: 12px;">
-                <textarea name="message" placeholder="¿En qué podemos ayudarte?" style="width:100%; padding:12px; background:#252525; border:1px solid #333; border-radius:10px; color:white;" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn-primary">ENVIAR</button>
-        </form>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px; font-size: 16px;">¿Necesitas ayuda?</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">Ingresa tu correo y consulta para contactar al creador:</p>
+            <form action="https://formspree.io/f/xvgzgeyw" method="POST">
+                <input type="email" name="email" class="input-field" required placeholder="ejemplo@correo.com">
+                <textarea name="message" class="input-field" required rows="4" placeholder="Escribe aquí tu consulta..."></textarea>
+                <input type="hidden" name="_to" value="gamers2asd@gmail.com">
+                <button type="submit" class="btn-primary">ENVIAR CONSULTA</button>
+            </form>
+        </div>
     </div>
 
     <!-- Result Panel -->
     <div id="result-panel">
         <div class="modal-header" style="margin-top: 0; margin-bottom: 15px;">
-            <h3>Escaneo Completo</h3>
+            <h3>Detalle del Escaneo</h3>
             <div onclick="closeResult()" style="color: var(--text-secondary); font-size: 12px;">CERRAR</div>
         </div>
-        <div id="result-content" class="card">
-            <!-- Dynamic Content -->
-        </div>
+        <div id="result-content" class="card"></div>
         <button id="save-btn" class="btn-primary" onclick="saveToHistory()">GUARDAR RECHAZADO</button>
     </div>
 
@@ -358,30 +372,31 @@
 
         function onScanSuccess(decodedText) {
             const isBOB = decodedText.toUpperCase().includes("BOB") || decodedText.includes("|");
-            
             lastResult = {
                 id: Date.now(),
                 status: isBOB ? "VÁLIDO" : "INHABILITADO",
                 color: isBOB ? "var(--primary)" : "var(--error)",
                 qr: decodedText,
-                date: new Date().toLocaleString(),
-                reason: isBOB ? "Serie verificada." : "Formato inválido."
+                date: new Date().toLocaleString()
             };
-
             showResult(lastResult);
-            if (window.navigator.vibrate) window.navigator.vibrate(100);
+            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
         }
 
         function showResult(result) {
             const content = document.getElementById('result-content');
             content.style.borderLeft = `4px solid ${result.color}`;
             content.innerHTML = `
-                <p style="font-size:11px; color:var(--text-secondary);">ESTADO</p>
-                <p style="color:${result.color}; font-weight:800; font-size:18px; margin-bottom:12px;">${result.status}</p>
-                <p style="font-size:11px; color:var(--text-secondary);">CONTENIDO QR</p>
-                <p style="font-size:12px; word-break:break-all;">${result.qr}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-secondary);">ESTADO</p>
+                        <p style="color: ${result.color}; font-weight: 800; font-size: 18px;">${result.status}</p>
+                    </div>
+                    <div style="background: ${result.color}; color: black; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 12px;">REGISTRO OK</div>
+                </div>
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Contenido QR</p>
+                <p style="font-size: 12px; color: white; word-break: break-all; margin-top: 4px;">${result.qr}</p>
             `;
-            
             document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
             document.getElementById('result-panel').classList.add('active');
         }
@@ -391,7 +406,7 @@
         function saveToHistory() {
             rejectedNotes.unshift(lastResult);
             localStorage.setItem('rejected_notes', JSON.stringify(rejectedNotes));
-            alert("Guardado.");
+            alert("Billete guardado en el historial.");
             closeResult();
         }
 
@@ -399,10 +414,13 @@
             const list = document.getElementById('history-list');
             list.innerHTML = rejectedNotes.length ? rejectedNotes.map(n => `
                 <div class="card" style="border-left: 4px solid var(--error);">
-                    <p style="font-weight: 800;">RECHAZADO - ${n.date}</p>
-                    <p style="font-size: 12px; color: var(--text-secondary);">${n.qr}</p>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 800; color: white;">INHABILITADO</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">${n.date}</span>
+                    </div>
+                    <p style="font-size: 12px; color: #ffadad; margin-top: 8px; word-break: break-all;">${n.qr}</p>
                 </div>
-            `).join('') : '<p style="text-align:center; padding:40px; color:#666;">Sin registros.</p>';
+            `).join('') : '<p style="text-align:center; padding:40px; color:#666;">No hay registros.</p>';
         }
 
         if ('serviceWorker' in navigator) {
