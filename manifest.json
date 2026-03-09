@@ -11,12 +11,12 @@
   "scope": "./",
   "icons": [
     {
-      "src": "app_logo_v16.jpg",
+      "src": "app_logo_v17.jpg",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "app_logo_v16.jpg",
+      "src": "app_logo_v17.jpg",
       "sizes": "512x512",
       "type": "image/jpeg"
     }
