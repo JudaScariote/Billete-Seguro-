@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BilleteSeguro BOB</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BilleteSafe">
+    <link rel="apple-touch-icon" href="logo_final.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -324,10 +328,15 @@
             </form>
         </div>
 
-        <div id="install-card" class="card" style="display: none; border-color: var(--primary);">
-            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">Instalar Aplicación</h3>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 15px;">Instala BilleteSeguro en tu pantalla de inicio para acceso rápido y offline.</p>
-            <button id="install-button" class="btn-primary">INSTALAR AHORA</button>
+        <div id="install-card" class="card" style="border-color: var(--primary);">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">Instalación Recomendada</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 15px; line-height: 1.4;">
+                Para acceso instantáneo y uso sin internet, instálala en tu móvil:
+            </p>
+            <button id="install-button" class="btn-primary" style="display: none;">INSTALAR AHORA</button>
+            <div id="manual-install-tip" style="color: var(--text-secondary); font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                💡 <b>Manual:</b> Toca los puntos (⋮) o el icono de compartir (↑) y selecciona <b>"Instalar"</b> o <b>"Agregar a inicio"</b>.
+            </div>
         </div>
     </div>
 
