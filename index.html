@@ -14,7 +14,7 @@
             --primary: #00f3ff;
             --bg: #0a0a0a;
             --surface: #1a1a1a;
-            --surface-glass: rgba(26, 26, 26, 0.4);
+            --surface-glass: rgba(10, 10, 10, 0.7);
             --text: #ffffff;
             --text-secondary: #a0a0a0;
             --error: #ff4d4d;
@@ -30,7 +30,7 @@
         }
 
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('bg_live.jpg');
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('bg_live.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -42,67 +42,50 @@
             position: relative;
         }
 
-        /* Header - Following user reference */
+        /* 1. Header Section - Clean and Centered */
         .header {
-            position: relative;
-            padding: 60px 20px 20px;
-            z-index: 100;
+            padding: 40px 20px 20px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            z-index: 100;
         }
 
         .logo-img {
-            width: 160px;
+            width: 120px;
             height: auto;
-            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.6));
-            mix-blend-mode: screen; /* Forces transparency on black backgrounds */
+            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4));
         }
 
         .header h1 {
-            color: var(--text);
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            text-transform: uppercase;
         }
 
-        /* Scanner Container - Centered and Aligned */
+        /* 2. Scanner Container - Perfectly Proportioned */
         #scanner-container {
-            position: relative;
             flex: 1;
             width: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
             z-index: 10;
         }
 
-        #reader-wrapper, .scan-frame {
-            width: 300px;
-            height: 300px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .scan-frame {
-            border: none;
-            border-radius: 20px;
-            z-index: 20;
-            box-shadow: none; /* Removed outer frame glow */
-            pointer-events: none;
-        }
-
-        #reader-wrapper {
+        .scanner-viewbox {
+            width: 280px;
+            height: 280px;
+            position: relative;
             border-radius: 20px;
             overflow: hidden;
-            background: #000;
-            z-index: 5;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
         #reader {
@@ -117,86 +100,54 @@
             object-fit: cover !important;
         }
 
-        .scan-badge {
-            position: absolute;
-            bottom: 40px;
-            background: var(--surface-glass);
-            backdrop-filter: blur(10px);
-            padding: 12px 30px;
-            border-radius: 25px;
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            z-index: 30;
-        }
-
-        .scan-badge p {
-            color: var(--primary);
-            font-weight: 800;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        /* Scan Animation */
+        /* Scan Line Animation - Clean Minimalist */
         @keyframes scanSlide {
-            0% {
-                transform: translateY(0);
-                opacity: 0;
-            }
-
-            15% {
-                opacity: 0.9;
-            }
-
-            50% {
-                transform: translateY(300px);
-                opacity: 0.9;
-            }
-
-            85% {
-                opacity: 0.9;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 0;
-            }
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            50% { transform: translateY(280px); opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(0); opacity: 0; }
         }
 
         .scan-line {
             position: absolute;
+            top: 0;
             left: 0;
             width: 100%;
-            height: 80px;
-            background: linear-gradient(to top, #00f3ff, transparent);
-            opacity: 0.6;
-            animation: scanSlide 3s ease-in-out infinite;
-            z-index: 2;
-        }
-
-        .scan-line-tip {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 6px; /* Slightly thicker */
+            height: 2px;
             background: #00f3ff;
-            box-shadow: 0 0 40px #00f3ff, 0 0 80px #00f3ff, 0 0 120px #00f3ff; /* Massive glow */
+            box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff;
+            z-index: 20;
+            animation: scanSlide 3s ease-in-out infinite;
         }
 
-        /* Bottom Navigation Bar - Exactly like Stitch */
-        .navbar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 140px;
+        .scan-badge {
+            margin-top: 25px;
             background: var(--surface-glass);
-            backdrop-filter: blur(25px);
-            border-top: 2px solid rgba(0, 243, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .scan-badge p {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 3. Bottom Navbar - Professional Proportions */
+        .navbar {
+            height: 85px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding-bottom: 40px;
+            padding-bottom: 15px;
             z-index: 1000;
         }
 
@@ -204,7 +155,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.2s;
@@ -215,34 +166,28 @@
             color: var(--primary);
         }
 
-        .nav-icon {
-            font-size: 64px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .nav-item:active .nav-icon {
-            transform: scale(1.3);
-            filter: brightness(1.5);
+        .nav-icon svg {
+            width: 30px;
+            height: 30px;
+            stroke-width: 2;
         }
 
         .nav-label {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 10px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-top: 5px;
+            letter-spacing: 0.5px;
         }
 
-        /* Modals & result views */
+        /* Modals & Result Views */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 10, 0.9);
-            /* Semi-transparent */
-            backdrop-filter: blur(15px);
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
             z-index: 2000;
             display: none;
             flex-direction: column;
@@ -250,20 +195,9 @@
             overflow-y: auto;
         }
 
-        .modal.active {
-            display: flex;
-            animation: slideUp 0.3s ease-out;
-        }
+        .modal.active { display: flex; animation: slideUp 0.3s ease-out; }
 
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-
-            to {
-                transform: translateY(0);
-            }
-        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         .modal-header {
             display: flex;
@@ -273,7 +207,6 @@
             padding-top: 20px;
         }
 
-        /* Result Panel (Slide up from bottom) */
         #result-panel {
             position: fixed;
             bottom: 0;
@@ -282,47 +215,21 @@
             background: var(--surface);
             border-top-left-radius: 30px;
             border-top-right-radius: 30px;
-            padding: 30px 24px 100px;
+            padding: 24px 24px 100px;
             transform: translateY(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 1500;
-            box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
         }
 
-        #result-panel.active {
-            transform: translateY(0);
-        }
+        #result-panel.active { transform: translateY(0); }
 
-        /* Premium Forms & Cards */
         .card {
-            background: rgba(28, 28, 28, 0.6);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             margin-bottom: 16px;
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .input-field {
-            width: 100%;
-            background: #252525;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 14px;
-            color: white;
-            font-size: 14px;
         }
 
         .btn-primary {
@@ -332,145 +239,105 @@
             padding: 16px;
             border-radius: 14px;
             font-weight: 800;
-            font-size: 15px;
+            font-size: 14px;
             width: 100%;
             cursor: pointer;
         }
 
-        #reader__dashboard {
-            display: none !important;
-        }
+        #reader__dashboard { display: none !important; }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 
 <body>
 
-    <!-- Main Header -->
     <div class="header">
-        <!-- Logo Image from USER reference -->
-        <img src="logo_full.png" class="logo-img" alt="Logo BilleteSeguro">
+        <img src="logo_full.png" class="logo-img" alt="BilleteSeguro">
         <h1>BilleteSeguro BOB</h1>
     </div>
 
-    <!-- Scanner View (Ocupando el lugar de los botones de la captura) -->
     <div id="scanner-container">
-        <div id="reader-wrapper">
+        <div class="scanner-viewbox">
             <div id="reader"></div>
-            <div class="scan-line">
-                <div class="scan-line-tip"></div>
-            </div>
+            <div class="scan-line"></div>
         </div>
 
-        <div class="scan-frame"></div>
-
-        <div class="scan-badge" style="margin-top: 30px;">
-            <p id="status-label">Analizando...</p>
+        <div class="scan-badge">
+            <p id="status-label">Escaneando...</p>
         </div>
     </div>
 
-    <!-- Bottom Nav Bar -->
-    <div class="navbar">
+    <nav class="navbar">
         <div class="nav-item" onclick="toggleModal('history-modal')">
             <div class="nav-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
             </div>
             <div class="nav-label">Historial</div>
         </div>
-        <div class="nav-item" onclick="toggleModal('support-modal')">
+        <div class="nav-item active">
             <div class="nav-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"></rect>
+                    <path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
             </div>
-            <div class="nav-label">Apoyo</div>
+            <div class="nav-label">Escanear</div>
         </div>
-    </div>
+        <div class="nav-item" onclick="toggleModal('support-modal')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4m0-4h.01" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div>
+            <div class="nav-label">Soporte</div>
+        </div>
+    </nav>
 
     <!-- History Modal -->
     <div id="history-modal" class="modal">
         <div class="modal-header">
-            <h2>Historial de Inhabilitados</h2>
+            <h2>Historial Inhabilitados</h2>
             <div onclick="toggleModal('history-modal')" style="color: var(--primary); font-weight: 700;">CERRAR</div>
         </div>
-        <div id="history-list">
-            <!-- Items injected by JS -->
-        </div>
+        <div id="history-list"></div>
     </div>
 
     <!-- Support Modal -->
     <div id="support-modal" class="modal">
         <div class="modal-header">
-            <h2>Apoyo al Creador</h2>
+            <h2>Soporte</h2>
             <div onclick="toggleModal('support-modal')" style="color: var(--primary); font-weight: 700;">CERRAR</div>
         </div>
-
         <div class="card" style="text-align: center;">
-            <p style="color: var(--primary); font-weight: 800; font-size: 12px; margin-bottom: 20px;">ESCANEA PARA
-                APOYAR AL CREADOR</p>
-            <div
-                style="background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px;">
-                <img src="qr_apoyo.jpg" style="width: 250px; height: 250px; object-fit: contain;">
+            <p style="color: var(--primary); font-weight: 800; font-size: 12px; margin-bottom: 20px;">AYUDA AL CREADOR</p>
+            <div style="background: white; padding: 10px; border-radius: 12px; display: inline-block;">
+                <img src="qr_apoyo.jpg" style="width: 200px; height: 200px; object-fit: contain;">
             </div>
-            <p style="color: var(--text-secondary); font-size: 13px;">Tu contribución ayuda a seguir mejorando</p>
         </div>
-
-        <div class="card">
-            <h3 style="margin-bottom: 15px; font-size: 16px;">¿Necesitas ayuda?</h3>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">Ingresa tu correo y consulta
-                para contactar al creador:</p>
-
-            <form action="https://formspree.io/f/xvgzgeyw" method="POST">
-                <div class="input-group">
-                    <label>Tu Correo</label>
-                    <input type="email" name="email" class="input-field" required placeholder="ejemplo@correo.com">
-                </div>
-                <div class="input-group">
-                    <label>Consulta</label>
-                    <textarea name="message" class="input-field" required rows="4"
-                        placeholder="Escribe aquí..."></textarea>
-                </div>
-                <input type="hidden" name="_to" value="gamers2asd@gmail.com">
-                <button type="submit" class="btn-primary">ENVIAR CONSULTA</button>
-            </form>
-        </div>
+        <form action="https://formspree.io/f/xvgzgeyw" method="POST" class="card">
+            <div style="margin-bottom: 12px;">
+                <input type="email" name="email" placeholder="Tu Correo" style="width:100%; padding:12px; background:#252525; border:1px solid #333; border-radius:10px; color:white;" required>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <textarea name="message" placeholder="¿En qué podemos ayudarte?" style="width:100%; padding:12px; background:#252525; border:1px solid #333; border-radius:10px; color:white;" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">ENVIAR</button>
+        </form>
     </div>
 
     <!-- Result Panel -->
     <div id="result-panel">
-        <div class="modal-header" style="margin-top: 0;">
-            <h3>Detalle del Escaneo</h3>
+        <div class="modal-header" style="margin-top: 0; margin-bottom: 15px;">
+            <h3>Escaneo Completo</h3>
             <div onclick="closeResult()" style="color: var(--text-secondary); font-size: 12px;">CERRAR</div>
         </div>
-        <div class="card" style="border-left: 4px solid var(--error); background: rgba(255, 77, 77, 0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Estado</p>
-                    <p style="color: var(--error); font-weight: 800; font-size: 18px;">INHABILITADO</p>
-                </div>
-                <div id="res-denom"
-                    style="background: var(--error); color: white; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 14px;">
-                    100 BOB</div>
-            </div>
-            <div style="margin-top: 15px;">
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Detalle QR</p>
-                <p id="res-qr" style="font-size: 12px; color: white; word-break: break-all; margin-top: 4px;">Sin datos
-                </p>
-            </div>
-            <div style="margin-top: 15px;">
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Motivo de Rechazo
-                </p>
-                <p id="res-reason" style="font-size: 13px; color: var(--error); margin-top: 4px; font-weight: 600;">
-                    Serie no coincide con registro oficial</p>
-            </div>
+        <div id="result-content" class="card">
+            <!-- Dynamic Content -->
         </div>
-        <button class="btn-primary" style="background: var(--error); color: white;" onclick="saveToHistory()">GUARDAR
-            RECHAZADO</button>
+        <button id="save-btn" class="btn-primary" onclick="saveToHistory()">GUARDAR RECHAZADO</button>
     </div>
 
     <script>
@@ -486,91 +353,61 @@
             document.getElementById('result-panel').classList.remove('active');
         }
 
-        // SCANNER LOGIC
         const html5QrCode = new Html5Qrcode("reader");
         const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
         function onScanSuccess(decodedText) {
             const isBOB = decodedText.toUpperCase().includes("BOB") || decodedText.includes("|");
             
-            if (isBOB) {
-                const parts = decodedText.split('|');
-                lastResult = {
-                    id: Date.now(),
-                    denomination: parts[0] || "Validando Denominación...",
-                    qr_content: decodedText,
-                    status: "VÁLIDO",
-                    reason: "Serie verificada en registro oficial",
-                    date: new Date().toLocaleString(),
-                    color: "var(--primary)"
-                };
-                showResult(lastResult);
-            } else {
-                lastResult = {
-                    id: Date.now(),
-                    denomination: "Desconocido",
-                    qr_content: decodedText,
-                    status: "INHABILITADO",
-                    reason: "Formato de serie no reconocido o inválido",
-                    date: new Date().toLocaleString(),
-                    color: "var(--error)"
-                };
-                showResult(lastResult);
-            }
+            lastResult = {
+                id: Date.now(),
+                status: isBOB ? "VÁLIDO" : "INHABILITADO",
+                color: isBOB ? "var(--primary)" : "var(--error)",
+                qr: decodedText,
+                date: new Date().toLocaleString(),
+                reason: isBOB ? "Serie verificada." : "Formato inválido."
+            };
 
-            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+            showResult(lastResult);
+            if (window.navigator.vibrate) window.navigator.vibrate(100);
         }
 
         function showResult(result) {
-            const panel = document.getElementById('result-panel');
-            const card = panel.querySelector('.card');
-            const statusText = card.querySelector('p[style*="font-weight: 800"]');
-            const denomBadge = document.getElementById('res-denom');
-            const reasonText = document.getElementById('res-reason');
-
-            card.style.borderLeft = `4px solid ${result.color}`;
-            statusText.innerText = result.status;
-            statusText.style.color = result.color;
-            denomBadge.innerText = result.denomination;
-            denomBadge.style.background = result.color;
-            reasonText.innerText = result.reason;
-            reasonText.style.color = result.color;
+            const content = document.getElementById('result-content');
+            content.style.borderLeft = `4px solid ${result.color}`;
+            content.innerHTML = `
+                <p style="font-size:11px; color:var(--text-secondary);">ESTADO</p>
+                <p style="color:${result.color}; font-weight:800; font-size:18px; margin-bottom:12px;">${result.status}</p>
+                <p style="font-size:11px; color:var(--text-secondary);">CONTENIDO QR</p>
+                <p style="font-size:12px; word-break:break-all;">${result.qr}</p>
+            `;
             
-            document.getElementById('res-qr').innerText = result.qr_content;
-            panel.classList.add('active');
+            document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
+            document.getElementById('result-panel').classList.add('active');
         }
 
         html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
 
         function saveToHistory() {
-            if (!lastResult) return;
             rejectedNotes.unshift(lastResult);
             localStorage.setItem('rejected_notes', JSON.stringify(rejectedNotes));
-            alert("Billete guardado en el historial.");
+            alert("Guardado.");
             closeResult();
         }
 
         function renderHistory() {
             const list = document.getElementById('history-list');
-            if (rejectedNotes.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding: 60px; color: #666;">No hay registros de billetes inhabilitados.</div>';
-                return;
-            }
-            list.innerHTML = rejectedNotes.map(note => `
-                <div class="card" style="border-left: 4px solid var(--error); padding: 16px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="font-weight: 800; color: white;">${note.denomination}</span>
-                        <span style="font-size: 11px; color: var(--text-secondary);">${note.date}</span>
-                    </div>
-                    <p style="color: var(--error); font-size: 13px; margin-top: 8px;">${note.reason}</p>
+            list.innerHTML = rejectedNotes.length ? rejectedNotes.map(n => `
+                <div class="card" style="border-left: 4px solid var(--error);">
+                    <p style="font-weight: 800;">RECHAZADO - ${n.date}</p>
+                    <p style="font-size: 12px; color: var(--text-secondary);">${n.qr}</p>
                 </div>
-            `).join('');
+            `).join('') : '<p style="text-align:center; padding:40px; color:#666;">Sin registros.</p>';
         }
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA ON'));
+            navigator.serviceWorker.register('./sw.js');
         }
     </script>
 </body>
-
 </html>
