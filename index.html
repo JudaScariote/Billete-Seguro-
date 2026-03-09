@@ -337,20 +337,23 @@
             </form>
         </div>
 
-        <div id="install-card" class="card" style="border-color: var(--primary);">
-            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">Instalación Recomendada</h3>
-            <p style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px; line-height: 1.4;">
-                Si ves barras celestes o el link de GitHub, necesitas actualizar la memoria de tu móvil:
+        <div id="install-card" class="card" style="border-color: var(--primary); background: rgba(0, 243, 255, 0.05);">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">📲 INSTALACIÓN MANUAL</h3>
+            <p style="color: white; font-size: 13px; margin-bottom: 15px; line-height: 1.4; font-weight: 600;">
+                Si no ves el botón automático, hazlo así para ocultar el link:
             </p>
-            <button onclick="forceAppUpdate()" class="btn-primary" style="background: #111; color: var(--primary); border: 1px solid var(--primary); margin-bottom: 20px;">🔄 FORZAR ACTUALIZACIÓN (LIMPIAR CACHÉ)</button>
             
-            <p style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px; line-height: 1.4;">
-                Una vez actualizado, instálala para ocultar el link:
-            </p>
-            <button id="install-button" class="btn-primary" style="display: none;">INSTALAR AHORA</button>
-            <div id="manual-install-tip" style="color: var(--text-secondary); font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                💡 <b>Manual:</b> Toca (⋮) o (↑) y selecciona <b>"Instalar"</b> o <b>"Agregar a inicio"</b>.
+            <div style="text-align: left; background: #000; padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px;">
+                <p style="color: var(--primary); font-size: 12px; margin-bottom: 8px;"><b>En Android (Chrome):</b></p>
+                <p style="color: var(--text-secondary); font-size: 11px;">Toca los <b>tres puntos (⋮)</b> arriba a la derecha y selecciona <b>"Instalar aplicación"</b>.</p>
+                
+                <p style="color: var(--primary); font-size: 12px; margin: 12px 0 8px;"><b>En iPhone (Safari):</b></p>
+                <p style="color: var(--text-secondary); font-size: 11px;">Toca el icono de <b>Compartir (↑)</b> y selecciona <b>"Agregar al inicio"</b>.</p>
             </div>
+
+            <button id="install-button" class="btn-primary" style="display: none; margin-bottom: 15px;">INSTALAR AHORA</button>
+
+            <button onclick="forceAppUpdate()" class="btn-primary" style="background: transparent; color: #666; border: 1px solid #333; font-size: 11px;">🔄 REFRESCAR MEMORIA (LIMPIAR CACHÉ)</button>
         </div>
     </div>
 
