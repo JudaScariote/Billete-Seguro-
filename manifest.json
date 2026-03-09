@@ -1,0 +1,17 @@
+{
+  "name": "BilleteSeguro BOB",
+  "short_name": "BilleteSafe",
+  "description": "Escáner profesional de billetes para Bolivia",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#2bee6c",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3037/3037243.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
