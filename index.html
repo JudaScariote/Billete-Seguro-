@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="BilleteSafe">
     <link rel="apple-touch-icon" href="logo_final.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -339,12 +339,17 @@
 
         <div id="install-card" class="card" style="border-color: var(--primary);">
             <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">Instalación Recomendada</h3>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 15px; line-height: 1.4;">
-                Para acceso instantáneo y uso sin internet, instálala en tu móvil:
+            <p style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px; line-height: 1.4;">
+                Si ves barras celestes o el link de GitHub, necesitas actualizar la memoria de tu móvil:
+            </p>
+            <button onclick="forceAppUpdate()" class="btn-primary" style="background: #111; color: var(--primary); border: 1px solid var(--primary); margin-bottom: 20px;">🔄 FORZAR ACTUALIZACIÓN (LIMPIAR CACHÉ)</button>
+            
+            <p style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px; line-height: 1.4;">
+                Una vez actualizado, instálala para ocultar el link:
             </p>
             <button id="install-button" class="btn-primary" style="display: none;">INSTALAR AHORA</button>
             <div id="manual-install-tip" style="color: var(--text-secondary); font-size: 11px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                💡 <b>Manual:</b> Toca los puntos (⋮) o el icono de compartir (↑) y selecciona <b>"Instalar"</b> o <b>"Agregar a inicio"</b>.
+                💡 <b>Manual:</b> Toca (⋮) o (↑) y selecciona <b>"Instalar"</b> o <b>"Agregar a inicio"</b>.
             </div>
         </div>
     </div>
@@ -382,6 +387,21 @@
                 alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp ✅");
             } catch (err) {
                 alert("Error al copiar. Copia el link manualmente: " + window.location.href);
+            }
+        }
+
+        async function forceAppUpdate() {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                alert("¡Caché limpiada! La aplicación se reiniciará para aplicar los cambios finales (Sin barras celestes).");
+                window.location.reload(true);
+            } else {
+                window.location.reload(true);
             }
         }
 
