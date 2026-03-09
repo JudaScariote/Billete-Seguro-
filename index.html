@@ -109,6 +109,22 @@
             animation: scanSlide 3s ease-in-out infinite;
         }
 
+        .scanner-instruction {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 30;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            opacity: 0.8;
+        }
+
         .scan-badge {
             margin-top: 35px;
             background: var(--surface-glass);
@@ -259,6 +275,14 @@
         <div class="scanner-viewbox" style="margin-top: 20px;">
             <div id="reader"></div>
             <div class="scan-line"></div>
+            <div class="scanner-instruction">Escanea el código QR del billete</div>
+        </div>
+
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+            <button onclick="openManualInput()" class="btn btn-secondary" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%;">
+                <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Digitar Serie y Número
+            </button>
         </div>
 
         <div class="scan-badge">
