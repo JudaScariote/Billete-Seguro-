@@ -392,6 +392,43 @@
         <button id="save-btn" class="btn-primary" onclick="saveToHistory()">GUARDAR RECHAZADO</button>
     </div>
 
+    <!-- Manual Input Modal -->
+    <div id="manual-modal" class="modal">
+        <div class="modal-content" style="max-width: 350px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--primary);">Entrada Manual</h3>
+                <div onclick="closeManualInput()" style="color: var(--text-secondary); cursor: pointer; font-size: 11px; font-weight: 800;">CERRAR</div>
+            </div>
+            
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Ingresa los datos para validar si el QR no funciona.</p>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">SERIE (LETRA)</label>
+                    <input type="text" id="manual-series" placeholder="Ejem: B" maxlength="1" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800; text-transform: uppercase;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">VALOR (BS)</label>
+                    <select id="manual-denom" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800;">
+                        <option value="10">10 Bs</option>
+                        <option value="20">20 Bs</option>
+                        <option value="50">50 Bs</option>
+                        <option value="100">100 Bs</option>
+                        <option value="200">200 Bs</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">NÚMERO DE SERIE</label>
+                    <input type="number" id="manual-serial" placeholder="Ejem: 109450001" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800;">
+                </div>
+
+                <button onclick="processManualInput()" class="btn-primary" style="margin-top: 10px;">VALIDAR AHORA</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let lastResult = null;
         let rejectedNotes = JSON.parse(localStorage.getItem('rejected_notes')) || [];
@@ -406,6 +443,42 @@
             const url = window.location.href;
             const qrImg = document.getElementById('share-qr');
             qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+        }
+
+        function openManualInput() {
+            document.getElementById('manual-modal').style.display = 'flex';
+            document.getElementById('manual-modal').classList.add('active');
+        }
+
+        function closeManualInput() {
+            document.getElementById('manual-modal').style.display = 'none';
+            document.getElementById('manual-modal').classList.remove('active');
+        }
+
+        function processManualInput() {
+            const seriesChar = document.getElementById('manual-series').value.trim();
+            const denomValue = document.getElementById('manual-denom').value;
+            const serialNum = document.getElementById('manual-serial').value.trim();
+
+            if (!seriesChar || !serialNum) {
+                alert("Completa todos los campos.");
+                return;
+            }
+
+            const result = validateBolivianBill(seriesChar, denomValue, serialNum);
+            
+            lastResult = {
+                id: Date.now(),
+                status: result.status,
+                color: result.color,
+                reason: result.reason,
+                qr: `MANUAL: ${seriesChar} ${serialNum}`,
+                denom: `${denomValue} Bs`,
+                date: new Date().toLocaleString()
+            };
+
+            closeManualInput();
+            showResult(lastResult);
         }
 
         async function copyAppLink() {
