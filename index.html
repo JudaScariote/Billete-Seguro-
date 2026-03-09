@@ -477,16 +477,21 @@
 
             isProcessing = true;
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            // Recortar solo el marco central de enfoque para acelerar el OCR x10
+            // Evita que Tesseract analice el fondo o bordes ruidosos
+            const size = Math.min(video.videoWidth, video.videoHeight) * 0.7;
+            const startX = (video.videoWidth - size) / 2;
+            const startY = (video.videoHeight - size) / 2;
             
-            if (canvas.width === 0) {
+            if (size <= 0) {
                 isProcessing = false;
                 requestAnimationFrame(() => processFrame(video, canvas, ctx));
                 return;
             }
 
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.width = size;
+            canvas.height = size;
+            ctx.drawImage(video, startX, startY, size, size, 0, 0, size, size);
 
             try {
                 const { data: { text } } = await ocrWorker.recognize(canvas);
@@ -495,10 +500,11 @@
                 console.error("OCR Error:", err);
             }
 
+            // Acelerar escaneo en vivo ahora que el área es pequeña y delimitada
             setTimeout(() => {
                 isProcessing = false;
                 requestAnimationFrame(() => processFrame(video, canvas, ctx));
-            }, 1000);
+            }, 500);
         }
 
         async function handleOCRUpload(event) {
@@ -522,41 +528,51 @@
         }
 
         function parseOCRText(text) {
-            // Formato 1: Letra y Números (ej: "B 109450001" o "B109450001")
-            const matchFormat1 = text.match(/\b([A-Z])\s*(\d{7,9})\b/i);
-            // Formato 2: Números y Letra (ej: "078510389 B" o "078510389B")
-            const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-Z])\b/i);
-            
+            let series = "";
+            let serial = "";
+            let denom = "Desconocido";
+
             const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
             const denomTextMatch = text.match(/\b(DIEZ|VEINTE|CINCUENTA|CIEN|DOSCIENTOS)\b/i);
 
-            if (matchFormat1 || matchFormat2) {
-                let series = "";
-                let serial = "";
+            if (denomMatch) {
+                denom = denomMatch[1];
+            } else if (denomTextMatch) {
+                const word = denomTextMatch[1].toUpperCase();
+                if (word === "DIEZ") denom = "10";
+                if (word === "VEINTE") denom = "20";
+                if (word === "CINCUENTA") denom = "50";
+                if (word === "CIEN") denom = "100";
+                if (word === "DOSCIENTOS") denom = "200";
+            }
+
+            // Formato 1: Letra y Números juntos (ej: "B 109450001" o "B109450001")
+            const matchFormat1 = text.match(/\b([A-Z])\s*(\d{7,9})\b/i);
+            // Formato 2: Números y Letra juntos (ej: "078510389 B" o "078510389B")
+            const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-Z])\b/i);
+
+            if (matchFormat1) {
+                series = matchFormat1[1].toUpperCase();
+                serial = matchFormat1[2];
+            } else if (matchFormat2) {
+                series = matchFormat2[2].toUpperCase();
+                serial = matchFormat2[1];
+            } else {
+                // Formato 3: Desconectados (Letra por un lado, Número de 7-9 dígitos por otro)
+                // Especialmente útil para la serie inferior impresa con espacios raros o verticalmente
+                const numMatch = text.match(/\b(\d{7,9})\b/);
+                const letterMatch = text.match(/\b([A-K])\b/i); // Filtra hasta la K aprox.
                 
-                if (matchFormat1) {
-                    series = matchFormat1[1].toUpperCase();
-                    serial = matchFormat1[2];
-                } else if (matchFormat2) {
-                    series = matchFormat2[2].toUpperCase();
-                    serial = matchFormat2[1];
+                if (numMatch && letterMatch) {
+                    serial = numMatch[1];
+                    series = letterMatch[1].toUpperCase();
                 }
+            }
 
-                let denom = "Desconocido";
-                if (denomMatch) {
-                    denom = denomMatch[1];
-                } else if (denomTextMatch) {
-                    const word = denomTextMatch[1].toUpperCase();
-                    if (word === "DIEZ") denom = "10";
-                    if (word === "VEINTE") denom = "20";
-                    if (word === "CINCUENTA") denom = "50";
-                    if (word === "CIEN") denom = "100";
-                    if (word === "DOSCIENTOS") denom = "200";
-                }
-
+            if (serial && series) {
                 const result = validateBolivianBill(series, denom, serial);
                 
-                if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 5000)) {
+                if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 3000)) {
                     lastResult = {
                         id: Date.now(),
                         status: result.status,
