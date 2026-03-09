@@ -47,7 +47,26 @@ function validateBolivianBill(serieChar, denomValue, serialNum) {
 
     // Serie B tiene validación por rango en 10, 20 y 50
     if (serie === 'B') {
-        if (DISABLED_RANGES[denom]) {
+        if (denom === "Desconocido") {
+            // Si la IA no pudo leer la denominación (por colores o calidad),
+            // revisamos TODOS los rangos para mayor seguridad.
+            let foundDenom = null;
+            for (const d in DISABLED_RANGES) {
+                const ranges = DISABLED_RANGES[d];
+                const isDisabled = ranges.some(range => num >= range[0] && num <= range[1]);
+                if (isDisabled) {
+                    foundDenom = d;
+                    break;
+                }
+            }
+            if (foundDenom) {
+                return { 
+                    status: "INHABILITADO", 
+                    reason: `Número ${num} inhabilitado (Robo comprobado de ${foundDenom} Bs).`, 
+                    color: "var(--error)" 
+                };
+            }
+        } else if (DISABLED_RANGES[denom]) {
             const ranges = DISABLED_RANGES[denom];
             const isDisabled = ranges.some(range => num >= range[0] && num <= range[1]);
             

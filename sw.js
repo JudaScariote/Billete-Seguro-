@@ -1,4 +1,4 @@
-const CACHE_NAME = 'billete-seguro-v34';
+const CACHE_NAME = 'billete-seguro-v35';
 const ASSETS = [
   './',
   './index.html',
