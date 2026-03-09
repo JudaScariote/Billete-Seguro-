@@ -14,7 +14,7 @@
             --primary: #00f3ff;
             --bg: #0a0a0a;
             --surface: #1a1a1a;
-            --surface-glass: rgba(10, 10, 10, 0.6);
+            --surface-glass: rgba(10, 10, 10, 0.4);
             --text: #ffffff;
             --text-secondary: #a0a0a0;
             --error: #ff4d4d;
@@ -30,7 +30,7 @@
         }
 
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('bg_live.jpg');
+            background: #000 url('bg_final.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -42,31 +42,13 @@
             position: relative;
         }
 
-        /* 1. Header - Centered Logo and Title */
+        /* 1. Header - Empty but preserved for spacing since branding is in BG */
         .header {
-            padding: 60px 20px 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
+            padding: 100px 20px 20px; /* Shift content down to respect BG logo */
             z-index: 100;
         }
 
-        .logo-img {
-            width: 130px;
-            height: auto;
-            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.3));
-        }
-
-        .header h1 {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* 2. Scanner - Unified and Clean */
+        /* 2. Scanner - Perfectly Centered */
         #scanner-container {
             flex: 1;
             width: 100%;
@@ -74,7 +56,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-bottom: 80px;
+            padding-bottom: 60px;
             z-index: 10;
         }
 
@@ -84,8 +66,8 @@
             position: relative;
             border-radius: 20px;
             overflow: hidden;
-            background: #000;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
         }
 
         #reader {
@@ -116,16 +98,16 @@
             width: 100%;
             height: 3px;
             background: #00f3ff;
-            box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff;
+            box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
             z-index: 20;
             animation: scanSlide 3s ease-in-out infinite;
         }
 
         .scan-badge {
-            margin-top: 30px;
+            margin-top: 35px;
             background: var(--surface-glass);
-            backdrop-filter: blur(10px);
-            padding: 10px 24px;
+            backdrop-filter: blur(15px);
+            padding: 10px 30px;
             border-radius: 25px;
             border: 1px solid rgba(0, 243, 255, 0.2);
         }
@@ -133,17 +115,17 @@
         .scan-badge p {
             color: var(--primary);
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
-        /* 3. Navbar - Standard Proportions */
+        /* 3. Navbar - Aesthetic & Minimal */
         .navbar {
             height: 85px;
-            background: var(--surface-glass);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -179,15 +161,15 @@
             letter-spacing: 0.5px;
         }
 
-        /* Modals & Cards */
+        /* Modals & Layout Cleanup */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(15px);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
             z-index: 2000;
             display: none;
             flex-direction: column;
@@ -208,11 +190,10 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             margin-bottom: 16px;
         }
 
@@ -264,8 +245,7 @@
 <body>
 
     <div class="header">
-        <img src="logo_final.png" class="logo-img" alt="BilleteSeguro">
-        <h1>BilleteSeguro BOB</h1>
+        <!-- Logo and H1 removed as they are part of bg_final.jpg -->
     </div>
 
     <div id="scanner-container">
@@ -275,7 +255,7 @@
         </div>
 
         <div class="scan-badge">
-            <p id="status-label">Analizando...</p>
+            <p id="status-label">Escaneando billete</p>
         </div>
     </div>
 
@@ -317,7 +297,7 @@
         <div id="history-list"></div>
     </div>
 
-    <!-- Support Modal - RESTORED -->
+    <!-- Support Modal -->
     <div id="support-modal" class="modal">
         <div class="modal-header">
             <h2>Apoyo al Creador</h2>
@@ -392,7 +372,6 @@
                         <p style="font-size: 11px; color: var(--text-secondary);">ESTADO</p>
                         <p style="color: ${result.color}; font-weight: 800; font-size: 18px;">${result.status}</p>
                     </div>
-                    <div style="background: ${result.color}; color: black; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 12px;">REGISTRO OK</div>
                 </div>
                 <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Contenido QR</p>
                 <p style="font-size: 12px; color: white; word-break: break-all; margin-top: 4px;">${result.qr}</p>
@@ -420,7 +399,7 @@
                     </div>
                     <p style="font-size: 12px; color: #ffadad; margin-top: 8px; word-break: break-all;">${n.qr}</p>
                 </div>
-            `).join('') : '<p style="text-align:center; padding:40px; color:#666;">No hay registros.</p>';
+             `).join('') : '<p style="text-align:center; padding:40px; color:#666;">No hay registros.</p>';
         }
 
         if ('serviceWorker' in navigator) {
