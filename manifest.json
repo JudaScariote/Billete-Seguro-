@@ -1,7 +1,6 @@
-{
-  "id": "billete-seguro-pwa",
+  "id": "billete-seguro-v18",
   "name": "BilleteSeguro BOB",
-  "short_name": "BilleteSafe",
+  "short_name": "BilleteBOB",
   "description": "Escáner profesional de billetes para Bolivia",
   "start_url": ".",
   "display": "standalone",
