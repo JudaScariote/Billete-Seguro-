@@ -434,9 +434,9 @@
             try {
                 ocrWorker = await Tesseract.createWorker('spa');
                 
-                // Configurar Whitelist para mayor precisión y velocidad
+                // Configurar Whitelist para mayor precisión y velocidad (Solo A, B, C permitidas como series)
                 await ocrWorker.setParameters({
-                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
+                    tessedit_char_whitelist: '0123456789ABC ',
                 });
 
                 document.getElementById('status-label').innerText = "Apunta al # de serie";
@@ -547,9 +547,9 @@
             }
 
             // Formato 1: Letra y Números juntos (ej: "B 109450001" o "B109450001")
-            const matchFormat1 = text.match(/\b([A-Z])\s*(\d{7,9})\b/i);
+            const matchFormat1 = text.match(/\b([A-C])\s*(\d{7,9})\b/i);
             // Formato 2: Números y Letra juntos (ej: "078510389 B" o "078510389B")
-            const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-Z])\b/i);
+            const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-C])\b/i);
 
             if (matchFormat1) {
                 series = matchFormat1[1].toUpperCase();
@@ -561,7 +561,7 @@
                 // Formato 3: Desconectados (Letra por un lado, Número de 7-9 dígitos por otro)
                 // Especialmente útil para la serie inferior impresa con espacios raros o verticalmente
                 const numMatch = text.match(/\b(\d{7,9})\b/);
-                const letterMatch = text.match(/\b([A-K])\b/i); // Filtra hasta la K aprox.
+                const letterMatch = text.match(/\b([A-C])\b/i); // Filtra estrictamente a A, B, C
                 
                 if (numMatch && letterMatch) {
                     serial = numMatch[1];
