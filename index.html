@@ -433,8 +433,16 @@
         let ocrWorker = null;
 
         async function initOCR() {
-            ocrWorker = await Tesseract.createWorker('spa');
-            startScanner();
+            const instr = document.querySelector('.scanner-instruction');
+            instr.innerText = "Cargando Motor OCR...";
+            try {
+                ocrWorker = await Tesseract.createWorker('spa');
+                instr.innerText = "Apunta al número de serie del billete";
+                startScanner();
+            } catch (err) {
+                console.error("Error al cargar Tesseract", err);
+                instr.innerText = "Error: Usa entrada manual";
+            }
         }
 
         async function startScanner() {
