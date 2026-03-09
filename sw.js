@@ -1,4 +1,4 @@
-const CACHE_NAME = 'billete-seguro-v1';
+const CACHE_NAME = 'billete-seguro-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const ASSETS = [
   './bg_live.jpg',
   './logo_full.png',
   './qr_apoyo.jpg',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'
 ];
 
 // Install Service Worker
@@ -16,6 +16,20 @@ self.addEventListener('install', event => {
       return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
+});
+
+// Activate & Clear Old Cache
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 // Fetch Service Worker
