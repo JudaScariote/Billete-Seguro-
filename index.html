@@ -504,12 +504,25 @@
         }
 
         function parseOCRText(text) {
-            const serialMatch = text.match(/([A-Z])\s*(\d{7,9})/i);
+            // Formato 1: Letra y Números (ej: "B 109450001" o "B109450001")
+            const matchFormat1 = text.match(/\b([A-Z])\s*(\d{7,9})\b/i);
+            // Formato 2: Números y Letra (ej: "078510389 B" o "078510389B")
+            const matchFormat2 = text.match(/\b(\d{7,9})\s*([A-Z])\b/i);
+            
             const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
 
-            if (serialMatch) {
-                const series = serialMatch[1].toUpperCase();
-                const serial = serialMatch[2];
+            if (matchFormat1 || matchFormat2) {
+                let series = "";
+                let serial = "";
+                
+                if (matchFormat1) {
+                    series = matchFormat1[1].toUpperCase();
+                    serial = matchFormat1[2];
+                } else if (matchFormat2) {
+                    series = matchFormat2[2].toUpperCase();
+                    serial = matchFormat2[1];
+                }
+
                 const denom = denomMatch ? denomMatch[1] : "Desconocido";
 
                 const result = validateBolivianBill(series, denom, serial);
