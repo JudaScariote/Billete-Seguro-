@@ -245,7 +245,7 @@
 
         #reader__dashboard { display: none !important; }
     </style>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com/tesseract.js@v5.0.0/dist/tesseract.min.js"></script>
     <script src="series_db.js"></script>
 </head>
 
@@ -257,12 +257,12 @@
 
     <div id="scanner-container">
         <div class="scanner-viewbox" style="margin-top: 20px;">
-            <div id="reader"></div>
+            <video id="video" style="width: 100%; height: 100%; object-fit: cover !important;" playsinline autoplay muted></video>
             <div class="scan-line"></div>
         </div>
 
         <div class="scan-badge">
-            <p id="status-label">Escaneando billete</p>
+            <p id="status-label">Cargando Inteligencia Artificial...</p>
         </div>
     </div>
 
@@ -284,7 +284,7 @@
             </div>
             <div class="nav-label">Historial</div>
         </div>
-        <div class="nav-item" onclick="document.getElementById('qr-upload').click()">
+        <div class="nav-item" onclick="document.getElementById('ocr-upload').click()">
             <div class="nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -292,7 +292,7 @@
             </div>
             <div class="nav-label">Subir Foto</div>
         </div>
-        <input type="file" id="qr-upload" accept="image/*" style="display: none;" onchange="handleQRUpload(event)">
+        <input type="file" id="ocr-upload" accept="image/*" style="display: none;" onchange="handleOCRUpload(event)">
         <div class="nav-item" onclick="toggleModal('support-modal')">
             <div class="nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -427,51 +427,106 @@
             document.getElementById('result-panel').classList.remove('active');
         }
 
-        const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 15 };
+        let isProcessing = false;
+        let ocrWorker = null;
 
-        function onScanSuccess(decodedText) {
-            console.log("Escaneado:", decodedText);
-            
-            let denom = "Desconocido";
-            let serial = "";
-            let series = "";
-            
-            // Intento de parseo robusto para QR de Bolivia
-            // Formato común 1: Denom|Serial|Series|... (e.g., "10|109450001|B|...")
-            if (decodedText.includes("|")) {
-                const parts = decodedText.split("|");
-                denom = parts[0];
-                serial = parts[1];
-                series = parts[2];
-            } 
-            // Formato común 2: Serial Series (e.g., "82705126 C")
-            else {
-                const match = decodedText.match(/(\d+)\s*([A-Za-z])/);
-                if (match) {
-                    serial = match[1];
-                    series = match[2];
-                }
+        async function initOCR() {
+            try {
+                ocrWorker = await Tesseract.createWorker('spa');
+                document.getElementById('status-label').innerText = "Apunta al # de serie";
+                startScanner();
+            } catch (err) {
+                console.error("Error al cargar Tesseract", err);
+                document.getElementById('status-label').innerText = "Error: OCR no disponible";
+            }
+        }
+
+        async function startScanner() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    video.play();
+                    requestAnimationFrame(() => processFrame(video, canvas, ctx));
+                };
+            } catch (err) {
+                console.error("Error cámara:", err);
+                document.getElementById('status-label').innerText = "Cámara no detectada";
+            }
+        }
+
+        async function processFrame(video, canvas, ctx) {
+            if (isProcessing) {
+                requestAnimationFrame(() => processFrame(video, canvas, ctx));
+                return;
             }
 
-            // Si no detectamos denominación por QR, intentamos inferir o marcamos como validación genérica
-            // Para la validación de rangos, la denominación es CRÍTICA.
-            const result = validateBolivianBill(series, denom, serial);
+            isProcessing = true;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
 
-            lastResult = {
-                id: Date.now(),
-                status: result.status,
-                color: result.color,
-                reason: result.reason,
-                qr: decodedText,
-                denom: denom !== "Desconocido" ? `${denom} Bs` : "Desconocido",
-                date: new Date().toLocaleString()
-            };
+            try {
+                const { data: { text } } = await ocrWorker.recognize(canvas);
+                parseOCRText(text);
+            } catch (err) {
+                console.error("OCR Error:", err);
+            }
 
-            showResult(lastResult);
-            if (window.navigator.vibrate) {
-                if (result.status === "VÁLIDO") window.navigator.vibrate(100);
-                else window.navigator.vibrate([100, 50, 100]);
+            setTimeout(() => {
+                isProcessing = false;
+                requestAnimationFrame(() => processFrame(video, canvas, ctx));
+            }, 1000);
+        }
+
+        async function handleOCRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('status-label').innerText = "Procesando...";
+
+            try {
+                const { data: { text } } = await ocrWorker.recognize(file);
+                document.getElementById('status-label').innerText = "Apunta al # de serie";
+                parseOCRText(text);
+            } catch (err) {
+                console.error("OCR Error:", err);
+                document.getElementById('status-label').innerText = "Error leyendo foto";
+            }
+            event.target.value = "";
+        }
+
+        function parseOCRText(text) {
+            const serialMatch = text.match(/([A-Z])\s*(\d{7,9})/i);
+            const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
+
+            if (serialMatch) {
+                const series = serialMatch[1].toUpperCase();
+                const serial = serialMatch[2];
+                const denom = denomMatch ? denomMatch[1] : "Desconocido";
+
+                const result = validateBolivianBill(series, denom, serial);
+                
+                if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 5000)) {
+                    lastResult = {
+                        id: Date.now(),
+                        status: result.status,
+                        color: result.color,
+                        reason: result.reason,
+                        qr: `OCR: ${series} ${serial}`,
+                        denom: denom !== "Desconocido" ? `${denom} Bs` : "BS ?",
+                        date: new Date().toLocaleString()
+                    };
+                    showResult(lastResult);
+                    if (window.navigator.vibrate) window.navigator.vibrate(result.status === "VÁLIDO" ? 100 : [100, 50, 100]);
+                }
             }
         }
 
@@ -491,14 +546,14 @@
                 <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Motivo</p>
                 <p style="font-size: 14px; color: white; font-weight: 600; margin-bottom: 12px;">${result.reason}</p>
                 
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Contenido QR</p>
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Texto Detectado</p>
                 <p style="font-size: 12px; color: var(--text-secondary); word-break: break-all;">${result.qr}</p>
             `;
             document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
             document.getElementById('result-panel').classList.add('active');
         }
 
-        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+        initOCR();
 
         function saveToHistory() {
             rejectedNotes.unshift(lastResult);

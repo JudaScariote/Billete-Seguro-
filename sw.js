@@ -1,4 +1,4 @@
-const CACHE_NAME = 'billete-seguro-v25';
+const CACHE_NAME = 'billete-seguro-v26';
 const ASSETS = [
   './',
   './index.html',
@@ -33,8 +33,29 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Service Worker
+// Fetch Service Worker con Caché Dinámico para Tesseract
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Interceptar peticiones de Tesseract para guardarlas offline
+  if (url.hostname === 'unpkg.com' || url.hostname.includes('tesseract')) {
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then(networkResponse => {
+          return caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // Comportamiento normal para resto de assets
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
