@@ -240,6 +240,7 @@
         #reader__dashboard { display: none !important; }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="series_db.js"></script>
 </head>
 
 <body>
@@ -351,16 +352,48 @@
         const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
         function onScanSuccess(decodedText) {
-            const isBOB = decodedText.toUpperCase().includes("BOB") || decodedText.includes("|");
+            console.log("Escaneado:", decodedText);
+            
+            let denom = "Desconocido";
+            let serial = "";
+            let series = "";
+            
+            // Intento de parseo robusto para QR de Bolivia
+            // Formato común 1: Denom|Serial|Series|... (e.g., "10|109450001|B|...")
+            if (decodedText.includes("|")) {
+                const parts = decodedText.split("|");
+                denom = parts[0];
+                serial = parts[1];
+                series = parts[2];
+            } 
+            // Formato común 2: Serial Series (e.g., "82705126 C")
+            else {
+                const match = decodedText.match(/(\d+)\s*([A-Za-z])/);
+                if (match) {
+                    serial = match[1];
+                    series = match[2];
+                }
+            }
+
+            // Si no detectamos denominación por QR, intentamos inferir o marcamos como validación genérica
+            // Para la validación de rangos, la denominación es CRÍTICA.
+            const result = validateBolivianBill(series, denom, serial);
+
             lastResult = {
                 id: Date.now(),
-                status: isBOB ? "VÁLIDO" : "INHABILITADO",
-                color: isBOB ? "var(--primary)" : "var(--error)",
+                status: result.status,
+                color: result.color,
+                reason: result.reason,
                 qr: decodedText,
+                denom: denom !== "Desconocido" ? `${denom} Bs` : "Desconocido",
                 date: new Date().toLocaleString()
             };
+
             showResult(lastResult);
-            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+            if (window.navigator.vibrate) {
+                if (result.status === "VÁLIDO") window.navigator.vibrate(100);
+                else window.navigator.vibrate([100, 50, 100]);
+            }
         }
 
         function showResult(result) {
@@ -370,11 +403,17 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div>
                         <p style="font-size: 11px; color: var(--text-secondary);">ESTADO</p>
-                        <p style="color: ${result.color}; font-weight: 800; font-size: 18px;">${result.status}</p>
+                        <p style="color: ${result.color}; font-weight: 800; font-size: 20px;">${result.status}</p>
+                    </div>
+                    <div style="background: ${result.color}; color: black; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 13px;">
+                        ${result.denom}
                     </div>
                 </div>
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;">Contenido QR</p>
-                <p style="font-size: 12px; color: white; word-break: break-all; margin-top: 4px;">${result.qr}</p>
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Motivo</p>
+                <p style="font-size: 14px; color: white; font-weight: 600; margin-bottom: 12px;">${result.reason}</p>
+                
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Contenido QR</p>
+                <p style="font-size: 12px; color: var(--text-secondary); word-break: break-all;">${result.qr}</p>
             `;
             document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
             document.getElementById('result-panel').classList.add('active');
