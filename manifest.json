@@ -5,7 +5,7 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0a",
-  "theme_color": "#2bee6c",
+  "theme_color": "#00f3ff",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3037/3037243.png",

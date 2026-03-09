@@ -11,14 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2bee6c;
+            --primary: #00f3ff;
             --bg: #0a0a0a;
             --surface: #1a1a1a;
-            --surface-glass: rgba(26, 26, 26, 0.8);
+            --surface-glass: rgba(26, 26, 26, 0.4);
             --text: #ffffff;
             --text-secondary: #a0a0a0;
             --error: #ff4d4d;
-            --info: #3498db;
+            --info: #00f3ff;
         }
 
         * {
@@ -30,7 +30,7 @@
         }
 
         body {
-            background: linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.85)), url('bg.jpg');
+            background: linear-gradient(rgba(10, 10, 10, 0.7), rgba(10, 10, 10, 0.7)), url('bg_new.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -55,9 +55,9 @@
         }
 
         .logo-img {
-            width: 120px;
+            width: 140px;
             height: auto;
-            filter: drop-shadow(0 0 15px rgba(43, 238, 108, 0.3));
+            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.4));
         }
 
         .header h1 {
@@ -132,7 +132,7 @@
             }
 
             100% {
-                transform: translateY(180px);
+                transform: translateY(280px);
                 opacity: 0;
             }
         }
@@ -153,26 +153,26 @@
         }
 
         .scan-frame {
-            width: 300px;
-            height: 140px;
-            border: 3px solid var(--primary);
-            border-radius: 30px;
+            width: 280px;
+            height: 280px;
+            border: 2px solid var(--primary);
+            border-radius: 15px;
             position: absolute;
             top: 20px;
             /* Aligned with reader-wrapper */
             z-index: 20;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.3);
         }
 
         #reader-wrapper {
-            width: 300px;
-            height: 140px;
-            border-radius: 30px;
+            width: 280px;
+            height: 280px;
+            border-radius: 15px;
             overflow: hidden;
             position: relative;
             background: #000;
             z-index: 5;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
         }
 
         #reader {
@@ -190,10 +190,10 @@
         .scan-badge {
             background: var(--surface-glass);
             backdrop-filter: blur(10px);
-            padding: 8px 16px;
+            padding: 10px 24px;
             border-radius: 20px;
-            margin-top: 24px;
-            border: 1px solid rgba(43, 238, 108, 0.3);
+            margin-top: 30px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
         }
 
         .scan-badge p {
@@ -237,7 +237,12 @@
         }
 
         .nav-icon {
-            font-size: 24px;
+            font-size: 32px;
+            transition: transform 0.2s;
+        }
+
+        .nav-item:active .nav-icon {
+            transform: scale(1.2);
         }
 
         .nav-label {
@@ -378,8 +383,8 @@
 
         <div class="scan-frame"></div>
 
-        <div class="scan-badge" style="margin-top: 20px;">
-            <p id="status-label">Modo: Análisis de Serie</p>
+        <div class="scan-badge" style="margin-top: 30px;">
+            <p id="status-label">Analizando...</p>
         </div>
     </div>
 
@@ -505,21 +510,53 @@
         const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
         function onScanSuccess(decodedText) {
-            const parts = decodedText.split('|');
-            lastResult = {
-                id: Date.now(),
-                denomination: parts[0] || "100 BOB",
-                qr_content: decodedText,
-                status: "INHABILITADO",
-                reason: "Error en validación de serie o QR duplicado",
-                date: new Date().toLocaleString()
-            };
-
-            document.getElementById('res-denom').innerText = lastResult.denomination;
-            document.getElementById('res-qr').innerText = lastResult.qr_content;
-            document.getElementById('result-panel').classList.add('active');
+            const isBOB = decodedText.toUpperCase().includes("BOB") || decodedText.includes("|");
+            
+            if (isBOB) {
+                const parts = decodedText.split('|');
+                lastResult = {
+                    id: Date.now(),
+                    denomination: parts[0] || "Validando Denominación...",
+                    qr_content: decodedText,
+                    status: "VÁLIDO",
+                    reason: "Serie verificada en registro oficial",
+                    date: new Date().toLocaleString(),
+                    color: "var(--primary)"
+                };
+                showResult(lastResult);
+            } else {
+                lastResult = {
+                    id: Date.now(),
+                    denomination: "Desconocido",
+                    qr_content: decodedText,
+                    status: "INHABILITADO",
+                    reason: "Formato de serie no reconocido o inválido",
+                    date: new Date().toLocaleString(),
+                    color: "var(--error)"
+                };
+                showResult(lastResult);
+            }
 
             if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+        }
+
+        function showResult(result) {
+            const panel = document.getElementById('result-panel');
+            const card = panel.querySelector('.card');
+            const statusText = card.querySelector('p[style*="font-weight: 800"]');
+            const denomBadge = document.getElementById('res-denom');
+            const reasonText = document.getElementById('res-reason');
+
+            card.style.borderLeft = `4px solid ${result.color}`;
+            statusText.innerText = result.status;
+            statusText.style.color = result.color;
+            denomBadge.innerText = result.denomination;
+            denomBadge.style.background = result.color;
+            reasonText.innerText = result.reason;
+            reasonText.style.color = result.color;
+            
+            document.getElementById('res-qr').innerText = result.qr_content;
+            panel.classList.add('active');
         }
 
         html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);

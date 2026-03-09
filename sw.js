@@ -3,7 +3,7 @@ const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './bg.jpg',
+  './bg_new.jpg',
   './logo_full.jpg',
   './qr_apoyo.jpg',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'
