@@ -1,4 +1,4 @@
-const CACHE_NAME = 'billete-seguro-v24';
+const CACHE_NAME = 'billete-seguro-v25';
 const ASSETS = [
   './',
   './index.html',
@@ -33,31 +33,11 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Service Worker (Network first, then Cache, Dynamic caching for Tesseract)
+// Fetch Service Worker
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      return fetch(event.request).then(networkResponse => {
-        // Solo cachear respuestas válidas y seguras
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
-          return networkResponse;
-        }
-        
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache);
-        });
-        
-        return networkResponse;
-      }).catch(() => {
-        // Opcional: retornar una página offline si falla la red y no está en caché
-      });
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
     })
   );
 });

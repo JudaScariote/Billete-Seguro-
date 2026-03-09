@@ -109,22 +109,6 @@
             animation: scanSlide 3s ease-in-out infinite;
         }
 
-        .scanner-instruction {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            z-index: 30;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            opacity: 0.8;
-        }
-
         .scan-badge {
             margin-top: 35px;
             background: var(--surface-glass);
@@ -271,22 +255,11 @@
         <!-- Espacio para la marca integrada en bg_final.jpg -->
     </div>
 
-            <div class="scanner-container">
-                <div class="scanner-viewbox">
-                    <video id="video" style="width: 100%; height: 100%; object-fit: cover;"></video>
-                    <div class="scan-line"></div>
-                    <div class="scanner-instruction">Apunta al número de serie del billete</div>
-                </div>
-            </div>
-
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-            <button onclick="openManualInput()" class="btn btn-secondary" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 100%;">
-                <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                Digitar Serie y Número
-            </button>
+    <div id="scanner-container">
+        <div class="scanner-viewbox" style="margin-top: 20px;">
+            <div id="reader"></div>
+            <div class="scan-line"></div>
         </div>
-
-        <input type="file" id="photo-upload" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
 
         <div class="scan-badge">
             <p id="status-label">Escaneando billete</p>
@@ -311,7 +284,7 @@
             </div>
             <div class="nav-label">Historial</div>
         </div>
-        <div class="nav-item" onclick="document.getElementById('photo-upload').click()">
+        <div class="nav-item" onclick="document.getElementById('qr-upload').click()">
             <div class="nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -319,6 +292,7 @@
             </div>
             <div class="nav-label">Subir Foto</div>
         </div>
+        <input type="file" id="qr-upload" accept="image/*" style="display: none;" onchange="handleQRUpload(event)">
         <div class="nav-item" onclick="toggleModal('support-modal')">
             <div class="nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -395,186 +369,37 @@
         <button id="save-btn" class="btn-primary" onclick="saveToHistory()">GUARDAR RECHAZADO</button>
     </div>
 
-    <!-- Manual Input Modal -->
-    <div id="manual-modal" class="modal">
-        <div class="modal-content" style="max-width: 350px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="margin: 0; color: var(--primary);">Entrada Manual</h3>
-                <div onclick="closeManualInput()" style="color: var(--text-secondary); cursor: pointer; font-size: 11px; font-weight: 800;">CERRAR</div>
-            </div>
-            
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Ingresa los datos para validar si el QR no funciona.</p>
-
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div>
-                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">SERIE (LETRA)</label>
-                    <input type="text" id="manual-series" placeholder="Ejem: B" maxlength="1" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800; text-transform: uppercase;">
-                </div>
-                
-                <div>
-                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">VALOR (BS)</label>
-                    <select id="manual-denom" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800;">
-                        <option value="10">10 Bs</option>
-                        <option value="20">20 Bs</option>
-                        <option value="50">50 Bs</option>
-                        <option value="100">100 Bs</option>
-                        <option value="200">200 Bs</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="display: block; font-size: 10px; color: var(--primary); margin-bottom: 5px; font-weight: 800;">NÚMERO DE SERIE</label>
-                    <input type="number" id="manual-serial" placeholder="Ejem: 109450001" style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px; color: white; border-radius: 12px; font-weight: 800;">
-                </div>
-
-                <button onclick="processManualInput()" class="btn-primary" style="margin-top: 10px;">VALIDAR AHORA</button>
-            </div>    <script src="https://unpkg.com/tesseract.js@v5.0.0/dist/tesseract.min.js"></script>
     <script>
         let lastResult = null;
         let rejectedNotes = JSON.parse(localStorage.getItem('rejected_notes')) || [];
-        let isProcessing = false;
-        let ocrWorker = null;
-
-        async function initOCR() {
-            const instr = document.querySelector('.scanner-instruction');
-            instr.innerText = "Cargando Motor OCR...";
-            try {
-                ocrWorker = await Tesseract.createWorker('spa');
-                instr.innerText = "Apunta al número de serie del billete";
-                startScanner();
-            } catch (err) {
-                console.error("Error al cargar Tesseract", err);
-                instr.innerText = "Error: Usa entrada manual";
-            }
-        }
-
-        async function startScanner() {
-            const video = document.getElementById('video');
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
-                });
-                video.srcObject = stream;
-                
-                video.onloadedmetadata = () => {
-                    video.play();
-                };
-            } catch (err) {
-                console.error("Error cámara:", err);
-            }
-        }
-
-        async function handlePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const instr = document.querySelector('.scanner-instruction');
-            instr.innerText = "Analizando Fotografía...";
-            document.getElementById('status-label').innerText = "Procesando...";
-
-            try {
-                // Tesseract v5 can process File objects directly
-                const { data: { text } } = await ocrWorker.recognize(file);
-                
-                // Limpiar la interfaz
-                instr.innerText = "Apunta al número de serie del billete";
-                document.getElementById('status-label').innerText = "Listo";
-                
-                parseOCRText(text);
-                
-            } catch (err) {
-                console.error("OCR Error:", err);
-                instr.innerText = "Error leyendo la foto";
-                document.getElementById('status-label').innerText = "Error";
-            }
-            
-            // Limpiar input para permitir la misma foto de nuevo
-            event.target.value = "";
-        }
-
-        function parseOCRText(text) {
-            console.log("Detectado:", text);
-            
-            // Regex para Serie y Número (Ej: B 109450001)
-            const serialMatch = text.match(/([A-Z])\s*(\d{7,9})/i);
-            // Regex para Denominación (10, 20, 50, 100, 200)
-            const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
-
-            if (serialMatch) {
-                const series = serialMatch[1].toUpperCase();
-                const serial = serialMatch[2];
-                const denom = denomMatch ? denomMatch[1] : "Desconocido";
-
-                // Solo validar si detectamos serie y número
-                const result = validateBolivianBill(series, denom, serial);
-                
-                if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 5000)) {
-                    lastResult = {
-                        id: Date.now(),
-                        status: result.status,
-                        color: result.color,
-                        reason: result.reason,
-                        qr: `OCR: ${series} ${serial}`,
-                        denom: denom !== "Desconocido" ? `${denom} Bs` : "BS ?",
-                        date: new Date().toLocaleString()
-                    };
-                    showResult(lastResult);
-                    if (window.navigator.vibrate) window.navigator.vibrate(result.status === "VÁLIDO" ? 100 : [100, 50, 100]);
-                }
-            }
-        }
 
         function toggleModal(id) {
             document.getElementById(id).classList.toggle('active');
             if (id === 'history-modal') renderHistory();
-            if (id === 'share-modal') generateShareQR();
         }
 
-        function generateShareQR() {
-            const url = window.location.href;
-            const qrImg = document.getElementById('share-qr');
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
-        }
+        function handleQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        function openManualInput() {
-            document.getElementById('manual-modal').style.display = 'flex';
-            document.getElementById('manual-modal').classList.add('active');
-        }
+            document.getElementById('status-label').innerText = "Analizando Imagen...";
 
-        function closeManualInput() {
-            document.getElementById('manual-modal').style.display = 'none';
-            document.getElementById('manual-modal').classList.remove('active');
-        }
-
-        function processManualInput() {
-            const seriesChar = document.getElementById('manual-series').value.trim();
-            const denomValue = document.getElementById('manual-denom').value;
-            const serialNum = document.getElementById('manual-serial').value.trim();
-
-            if (!seriesChar || !serialNum) {
-                alert("Completa todos los campos.");
-                return;
-            }
-
-            const result = validateBolivianBill(seriesChar, denomValue, serialNum);
+            html5QrCode.scanFile(file, true)
+                .then(decodedText => {
+                    document.getElementById('status-label').innerText = "Listo";
+                    onScanSuccess(decodedText);
+                })
+                .catch(err => {
+                    console.error("QR Error:", err);
+                    document.getElementById('status-label').innerText = "Escaneando billete";
+                    alert("No se pudo detectar un código QR en la imagen. Intenta con otra foto más clara.");
+                });
             
-            lastResult = {
-                id: Date.now(),
-                status: result.status,
-                color: result.color,
-                reason: result.reason,
-                qr: `MANUAL: ${seriesChar} ${serialNum}`,
-                denom: `${denomValue} Bs`,
-                date: new Date().toLocaleString()
-            };
-
-            closeManualInput();
-            showResult(lastResult);
+            event.target.value = "";
         }
 
         async function copyAppLink() {
-            const text = `¡Te comparto BilleteSeguro BOB! El escáner OCR para billetes de Bolivia. Funciona sin internet. Ábrelo aquí e instálalo: ${window.location.href}`;
+            const text = `¡Te comparto BilleteSeguro BOB! El escáner profesional para billetes de Bolivia. Funciona sin internet. Ábrelo aquí e instálalo: ${window.location.href}`;
             try {
                 await navigator.clipboard.writeText(text);
                 alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp ✅");
@@ -591,7 +416,7 @@
                 }
                 const cacheNames = await caches.keys();
                 await Promise.all(cacheNames.map(name => caches.delete(name)));
-                alert("¡Caché limpiada! Cargando motor de texto v22...");
+                alert("¡Caché limpiada! La aplicación se reiniciará para aplicar los cambios finales (Sin barras celestes).");
                 window.location.reload(true);
             } else {
                 window.location.reload(true);
@@ -600,6 +425,54 @@
 
         function closeResult() {
             document.getElementById('result-panel').classList.remove('active');
+        }
+
+        const html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 15 };
+
+        function onScanSuccess(decodedText) {
+            console.log("Escaneado:", decodedText);
+            
+            let denom = "Desconocido";
+            let serial = "";
+            let series = "";
+            
+            // Intento de parseo robusto para QR de Bolivia
+            // Formato común 1: Denom|Serial|Series|... (e.g., "10|109450001|B|...")
+            if (decodedText.includes("|")) {
+                const parts = decodedText.split("|");
+                denom = parts[0];
+                serial = parts[1];
+                series = parts[2];
+            } 
+            // Formato común 2: Serial Series (e.g., "82705126 C")
+            else {
+                const match = decodedText.match(/(\d+)\s*([A-Za-z])/);
+                if (match) {
+                    serial = match[1];
+                    series = match[2];
+                }
+            }
+
+            // Si no detectamos denominación por QR, intentamos inferir o marcamos como validación genérica
+            // Para la validación de rangos, la denominación es CRÍTICA.
+            const result = validateBolivianBill(series, denom, serial);
+
+            lastResult = {
+                id: Date.now(),
+                status: result.status,
+                color: result.color,
+                reason: result.reason,
+                qr: decodedText,
+                denom: denom !== "Desconocido" ? `${denom} Bs` : "Desconocido",
+                date: new Date().toLocaleString()
+            };
+
+            showResult(lastResult);
+            if (window.navigator.vibrate) {
+                if (result.status === "VÁLIDO") window.navigator.vibrate(100);
+                else window.navigator.vibrate([100, 50, 100]);
+            }
         }
 
         function showResult(result) {
@@ -618,12 +491,14 @@
                 <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Motivo</p>
                 <p style="font-size: 14px; color: white; font-weight: 600; margin-bottom: 12px;">${result.reason}</p>
                 
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Texto Detectado</p>
+                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Contenido QR</p>
                 <p style="font-size: 12px; color: var(--text-secondary); word-break: break-all;">${result.qr}</p>
             `;
             document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
             document.getElementById('result-panel').classList.add('active');
         }
+
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
 
         function saveToHistory() {
             rejectedNotes.unshift(lastResult);
@@ -644,8 +519,6 @@
                 </div>
              `).join('') : '<p style="text-align:center; padding:40px; color:#666;">No hay registros.</p>';
         }
-
-        initOCR();
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js');
