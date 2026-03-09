@@ -1,11 +1,11 @@
-const CACHE_NAME = 'billete-seguro-v14';
+const CACHE_NAME = 'billete-seguro-v15';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './bg_final.jpg',
   './qr_apoyo.jpg',
-  './logo_final.png',
+  './icon_final.jpg',
   './series_db.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'
 ];
