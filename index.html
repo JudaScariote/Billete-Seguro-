@@ -477,21 +477,21 @@
 
             isProcessing = true;
 
-            // Recortar solo el marco central de enfoque para acelerar el OCR x10
-            // Evita que Tesseract analice el fondo o bordes ruidosos
-            const size = Math.min(video.videoWidth, video.videoHeight) * 0.7;
-            const startX = (video.videoWidth - size) / 2;
-            const startY = (video.videoHeight - size) / 2;
+            // Recortar un rectángulo ancho (90% width, 30% height) para que entren los 9 dígitos sin cortarse en los bordes
+            const cropWidth = video.videoWidth * 0.9;
+            const cropHeight = video.videoHeight * 0.3;
+            const startX = (video.videoWidth - cropWidth) / 2;
+            const startY = (video.videoHeight - cropHeight) / 2;
             
-            if (size <= 0) {
+            if (cropWidth <= 0) {
                 isProcessing = false;
                 requestAnimationFrame(() => processFrame(video, canvas, ctx));
                 return;
             }
 
-            canvas.width = size;
-            canvas.height = size;
-            ctx.drawImage(video, startX, startY, size, size, 0, 0, size, size);
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+            ctx.drawImage(video, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
             try {
                 const { data: { text } } = await ocrWorker.recognize(canvas);
@@ -547,8 +547,8 @@
             }
 
             // El USUARIO solicitó ESTRICTAMENTE: 8 a 9 dígitos, UN ESPACIO, y luego la Letra (A, B o C)
-            // Ejemplo: "078510389 B"
-            const strictMatch = text.match(/\b(\d{8,9})\s+([A-C])\b/i);
+            // Ejemplo: "078510389 B" (permitimos \s* en vez de \s+ por si la cámara rápida borronea el espacio pero las letras están separadas visualmente)
+            const strictMatch = text.match(/\b(\d{8,9})\s*([A-C])\b/i);
 
             if (strictMatch) {
                 serial = strictMatch[1];
