@@ -244,7 +244,7 @@
 
         #reader__dashboard { display: none !important; }
     </style>
-    <script src="https://unpkg.com/tesseract.js@v5.0.0/dist/tesseract.min.js"></script>
+    <script src="./tesseract.min.js"></script>
     <script src="series_db.js"></script>
 </head>
 
@@ -354,7 +354,7 @@
 
             <button id="install-button" class="btn-primary" style="display: none; margin-bottom: 15px;">INSTALAR AHORA</button>
 
-            <button onclick="forceAppUpdate()" class="btn-primary" style="background: transparent; color: #666; border: 1px solid #333; font-size: 11px;">🔄 REFRESCAR MEMORIA (LIMPIAR CACHÉ)</button>
+            <button onclick="forceAppUpdate()" class="btn-primary" style="background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d44; font-size: 11px;">🗑️ BORRAR DATOS Y MEMORIA (requiere internet después)</button>
         </div>
     </div>
 
@@ -408,18 +408,17 @@
         }
 
         async function forceAppUpdate() {
+            const confirm = window.confirm(
+                "⚠️ ATENCIÓN: Esto borrará todos los datos descargados.\n\nDespués necesitarás conexión a internet para que la app vuelva a funcionar.\n\n¿Continuar?"
+            );
+            if (!confirm) return;
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
-                for (let registration of registrations) {
-                    await registration.unregister();
-                }
+                for (let reg of registrations) await reg.unregister();
                 const cacheNames = await caches.keys();
                 await Promise.all(cacheNames.map(name => caches.delete(name)));
-                alert("¡Caché limpiada! La aplicación se reiniciará para aplicar los cambios finales (Sin barras celestes).");
-                window.location.reload(true);
-            } else {
-                window.location.reload(true);
             }
+            window.location.reload(true);
         }
 
         function closeResult() {
@@ -431,11 +430,19 @@
 
         async function initOCR() {
             try {
-                ocrWorker = await Tesseract.createWorker('spa');
-                
-                // Configurar Whitelist relajada para que Tesseract no se confunda intentando forzar letras erróneas
+                // Usar archivos locales para funcionar 100% sin internet
+                ocrWorker = await Tesseract.createWorker('eng', 1, {
+                    workerPath: './tesseract.worker.min.js',
+                    langPath: './',
+                    corePath: './tesseract-core.wasm',
+                    logger: () => {}
+                });
+
+                // Whitelist estricta: solo números y letras relevantes para máxima velocidad
                 await ocrWorker.setParameters({
-                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                    tessedit_pageseg_mode: '7',  // Tratar imagen como línea única de texto
+                    classify_min_score: '0',
                 });
 
                 document.getElementById('status-label').innerText = "Apunta al # de serie";
@@ -468,57 +475,63 @@
             }
         }
 
-        // --- SISTEMA DE DETECCIÓN DE COLOR (Fallback para denominaciones) ---
-        // Basado en los colores predominantes de los billetes bolivianos
-        const BILL_COLORS = {
-            "10": {r: 30, g: 80, b: 160},    // Azul
-            "20": {r: 220, g: 130, b: 40},   // Naranja
-            "50": {r: 140, g: 70, b: 160},   // Violeta
-            "100": {r: 200, g: 60, b: 60},   // Rojo
-            "200": {r: 130, g: 80, b: 50}    // Café
-        };
+        // --- DETECCIÓN DE COLOR POR MATIZ (HSV/HUE) - Más preciso que RGB ---
+        // Los rangos de matiz (hue 0-360°) son estables bajo distintas condiciones de luz
+        // Billetes bolivianos: 10=Azul, 20=Naranja, 50=Violeta, 100=Rojo, 200=Café/Verde
 
-        function getDominantDenominationColor(ctx, width, height) {
+        function getDenominationByColor(videoOrCtx, width, height, isVideo) {
             try {
-                const imageData = ctx.getImageData(0, 0, width, height);
+                let imageData;
+                if (isVideo) {
+                    // Leer del frame completo del video para mejor detección de color
+                    const colorCanvas = document.createElement('canvas');
+                    colorCanvas.width = Math.min(width, 320); // pequeño para rapidez
+                    colorCanvas.height = Math.min(height, 240);
+                    const scale = colorCanvas.width / width;
+                    const cCtx = colorCanvas.getContext('2d');
+                    cCtx.drawImage(videoOrCtx, 0, 0, width, height, 0, 0, colorCanvas.width, colorCanvas.height);
+                    imageData = cCtx.getImageData(0, 0, colorCanvas.width, colorCanvas.height);
+                } else {
+                    imageData = videoOrCtx.getImageData(0, 0, width, height);
+                }
                 const data = imageData.data;
-                
-                let rSum = 0, gSum = 0, bSum = 0;
-                let count = 0;
-                
-                // Muestrear píxeles (saltando de 16 en 16 para rendimiento)
-                for (let i = 0; i < data.length; i += 16) {
-                    rSum += data[i];
-                    gSum += data[i + 1];
-                    bSum += data[i + 2];
-                    count++;
+                const votes = { "10": 0, "20": 0, "50": 0, "100": 0, "200": 0 };
+
+                // Muestrear cada 8 píxeles para rendimiento
+                for (let i = 0; i < data.length; i += 32) {
+                    const r = data[i] / 255, g = data[i+1] / 255, b = data[i+2] / 255;
+                    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                    const delta = max - min;
+                    const v = max;
+
+                    // Ignorar píxeles grises, blancos o muy oscuros (sin color definido)
+                    if (delta < 0.15 || v < 0.12 || v > 0.96) continue;
+
+                    // Calcular matiz (hue) 0-360°
+                    let h = 0;
+                    if (max === r) h = ((g - b) / delta) % 6;
+                    else if (max === g) h = (b - r) / delta + 2;
+                    else h = (r - g) / delta + 4;
+                    h = h * 60;
+                    if (h < 0) h += 360;
+
+                    // Rangos de matiz para billetes bolivianos
+                    if (h >= 195 && h <= 265) votes["10"]++;      // Azul
+                    else if (h >= 15 && h <= 52) votes["20"]++;   // Naranja
+                    else if (h >= 265 && h <= 325) votes["50"]++; // Violeta
+                    else if (h >= 325 || h <= 14) votes["100"]++; // Rojo
+                    else if (h >= 52 && h <= 145) votes["200"]++; // Café/verde oliva
                 }
-                
-                if (count === 0) return null;
-                
-                const avgR = rSum / count;
-                const avgG = gSum / count;
-                const avgB = bSum / count;
-                
-                let minDistance = Infinity;
-                let closestDenom = null;
-                
-                // Distancia Euclidiana para encontrar el color más cercano
-                for (const [denom, color] of Object.entries(BILL_COLORS)) {
-                    const dist = Math.sqrt(
-                        Math.pow(avgR - color.r, 2) + 
-                        Math.pow(avgG - color.g, 2) + 
-                        Math.pow(avgB - color.b, 2)
-                    );
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        closestDenom = denom;
-                    }
+
+                const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+                const total = Object.values(votes).reduce((a, b) => a + b, 0);
+                // Retornar solo si hay suficientes votos de color y es claro ganador
+                if (sorted[0][1] > 20 && total > 0 && (sorted[0][1] / total) > 0.30) {
+                    return sorted[0][0];
                 }
-                
-                return closestDenom;
+                return null;
             } catch (err) {
-                console.error("Error leyendo color:", err);
+                console.error("Error color:", err);
                 return null;
             }
         }
@@ -531,38 +544,40 @@
 
             isProcessing = true;
 
-            // Recortar un rectángulo ancho (90% width, 30% height) para que entren los 9 dígitos sin cortarse en los bordes
-            const cropWidth = video.videoWidth * 0.9;
-            const cropHeight = video.videoHeight * 0.3;
-            const startX = (video.videoWidth - cropWidth) / 2;
-            const startY = (video.videoHeight - cropHeight) / 2;
-            
-            if (cropWidth <= 0) {
+            const vW = video.videoWidth;
+            const vH = video.videoHeight;
+
+            if (vW <= 0) {
                 isProcessing = false;
                 requestAnimationFrame(() => processFrame(video, canvas, ctx));
                 return;
             }
 
-            canvas.width = cropWidth;
-            canvas.height = cropHeight;
-            ctx.drawImage(video, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+            // 1. Detección de color en frame completo (instantáneo, sin OCR)
+            const colorDenom = getDenominationByColor(video, vW, vH, true);
 
-            // 1. Extraer el color predominante del recorte
-            const colorDenom = getDominantDenominationColor(ctx, cropWidth, cropHeight);
+            // 2. Recorte SOLO para OCR del número de serie: 90% ancho, 30% altura central
+            const cropW = vW * 0.9;
+            const cropH = vH * 0.30;
+            const startX = (vW - cropW) / 2;
+            const startY = (vH - cropH) / 2;
+
+            // Escalar a máx 480px de ancho para OCR ultrarrápido (3-4x más rápido)
+            const MAX_OCR_W = 480;
+            const scale = cropW > MAX_OCR_W ? MAX_OCR_W / cropW : 1;
+            canvas.width = Math.round(cropW * scale);
+            canvas.height = Math.round(cropH * scale);
+            ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, canvas.width, canvas.height);
 
             try {
-                // 2. Extraer texto con OCR
                 const { data: { text } } = await ocrWorker.recognize(canvas);
                 parseOCRText(text, colorDenom);
             } catch (err) {
                 console.error("OCR Error:", err);
             }
 
-            // Acelerar escaneo en vivo ahora que el área es pequeña y delimitada
-            setTimeout(() => {
-                isProcessing = false;
-                requestAnimationFrame(() => processFrame(video, canvas, ctx));
-            }, 500);
+            isProcessing = false;
+            requestAnimationFrame(() => processFrame(video, canvas, ctx));
         }
 
         async function handleOCRUpload(event) {
@@ -572,25 +587,33 @@
             document.getElementById('status-label').innerText = "Procesando Imagen...";
 
             try {
-                // Tesseract lee File objects directamente con máxima calidad
-                const { data: { text } } = await ocrWorker.recognize(file);
-                
-                // Analizar el color de la imagen subida
                 const img = new Image();
                 img.src = URL.createObjectURL(file);
                 await new Promise(resolve => img.onload = resolve);
-                
+
+                // Detectar color del billete completo
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = img.width;
                 tempCanvas.height = img.height;
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCtx.drawImage(img, 0, 0);
-                
-                const colorDenom = getDominantDenominationColor(tempCtx, img.width, img.height);
-                
+                const colorDenom = getDenominationByColor(tempCtx, img.width, img.height, false);
+
+                // OCR solo en la franja central del número de serie
+                const ocrCanvas = document.createElement('canvas');
+                const MAX_OCR_W = 480;
+                const scale = img.width > MAX_OCR_W ? MAX_OCR_W / img.width : 1;
+                const cropH = img.height * 0.35;
+                const cropStartY = img.height * 0.325;
+                ocrCanvas.width = Math.round(img.width * scale);
+                ocrCanvas.height = Math.round(cropH * scale);
+                const oCtx = ocrCanvas.getContext('2d');
+                oCtx.drawImage(img, 0, cropStartY, img.width, cropH, 0, 0, ocrCanvas.width, ocrCanvas.height);
+
+                const { data: { text } } = await ocrWorker.recognize(ocrCanvas);
                 document.getElementById('status-label').innerText = "Apunta al # de serie";
                 parseOCRText(text, colorDenom);
-                
+
             } catch (err) {
                 console.error("OCR Error:", err);
                 document.getElementById('status-label').innerText = "Error leyendo foto";
@@ -598,27 +621,14 @@
             event.target.value = "";
         }
 
-        function parseOCRText(text, colorFallback) {
+        function parseOCRText(text, colorDenom) {
             let series = "";
             let serial = "";
-            let denom = "Desconocido";
 
-            const denomMatch = text.match(/\b(10|20|50|100|200)\b/);
-            const denomTextMatch = text.match(/\b(DIEZ|VEINTE|CINCUENTA|CIEN|DOSCIENTOS)\b/i);
-
-            if (denomMatch) {
-                denom = denomMatch[1];
-            } else if (denomTextMatch) {
-                const word = denomTextMatch[1].toUpperCase();
-                if (word === "DIEZ") denom = "10";
-                if (word === "VEINTE") denom = "20";
-                if (word === "CINCUENTA") denom = "50";
-                if (word === "CIEN") denom = "100";
-                if (word === "DOSCIENTOS") denom = "200";
-            } else if (colorFallback) {
-                // Si la IA no puede leer los números ni el micro-texto, usamos el detector de color RGB
-                denom = colorFallback;
-            }
+            // COLOR ES LA FUENTE PRIMARIA DE DENOMINACIÓN (instantáneo y preciso)
+            // OCR de números para denominación eliminado: "50" puede aparecer en el año o texto del billete
+            // causando falsos positivos (ej: billete de 10 reconocido como 50)
+            let denom = colorDenom || "Desconocido";
 
             // El USUARIO solicitó ESTRICTAMENTE: 8 a 9 dígitos, UN ESPACIO, y luego la Letra (A, B o C)
             // Ejemplo: "078510389 B" (permitimos \s* en vez de \s+ por si la cámara rápida borronea el espacio pero las letras están separadas visualmente)
