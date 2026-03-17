@@ -3,67 +3,57 @@ const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './bg_final.jpg',
-  './qr_apoyo.jpg',
-  './app_icon_v20.png',
   './series_db.js',
-  // Tesseract 100% local - sin internet
   './tesseract.min.js',
   './tesseract.worker.min.js',
   './tesseract-core.wasm',
   './eng.traineddata.gz',
-  // Fuente de Google (se cachea en primer uso)
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'
+  './bg_final.jpg',
+  './qr_apoyo.jpg',
+  './app_icon_v20.png'
 ];
 
-// Install Service Worker
-self.addEventListener('install', event => {
+// Install Event
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      // Cachear archivos críticos primero, la fuente de Google de forma separada (puede fallar offline)
-      const criticalAssets = ASSETS.filter(url => !url.startsWith('https://fonts'));
-      const optionalAssets = ASSETS.filter(url => url.startsWith('https://fonts'));
-
-      return cache.addAll(criticalAssets).then(() => {
-        return Promise.allSettled(optionalAssets.map(url => cache.add(url)));
-      });
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
-// Activate & Clear Old Cache
-self.addEventListener('activate', event => {
+// Activate Event
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
       );
     })
   );
-  self.clients.claim();
 });
 
-// Fetch - Cache First para todos los assets
-self.addEventListener('fetch', event => {
+// Fetch Event
+self.addEventListener('fetch', (event) => {
+  // Ignorar peticiones de analíticas o externas si las hubiera
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      // Si no está en caché, intentar red y guardar dinámicamente
-      return fetch(event.request).then(networkResponse => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
+    caches.match(event.request).then((response) => {
+      if (response) return response;
+      
+      return fetch(event.request).then((networkResponse) => {
+        // No cachear dinámicamente para evitar llenar el almacenamiento,
+        // solo usar lo pre-cacheado en ASSETS
         return networkResponse;
       }).catch(() => {
-        // Sin respuesta offline para este recurso
-        return new Response('Offline - recurso no disponible', { status: 503 });
+        // Si no hay red ni cache, fallar silenciosamente
+        return null;
       });
     })
   );
