@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BilleteSeguro BOB</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="app_icon_v20.png">
@@ -48,51 +48,43 @@
             position: relative;
         }
 
-        /* 1. Header - Pushed down to clear BG branding */
         .header {
-            padding: 160px 20px 20px; 
+            padding: 185px 20px 20px; 
             z-index: 100;
         }
 
-        /* 2. Scanner - Perfectly Centered */
         #scanner-container {
             flex: 1;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding-bottom: 60px;
+            justify-content: flex-start;
             z-index: 10;
         }
 
         .scanner-viewbox {
-            width: 280px;
-            height: 280px;
+            width: 300px;
+            height: 300px;
             position: relative;
             border-radius: 20px;
             overflow: hidden;
-            background: rgba(0, 0, 0, 0.85);
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            background: #000;
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
         }
 
-        #reader {
-            width: 100% !important;
-            height: 100% !important;
-            border: none !important;
-        }
-
-        #reader video {
+        video {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
+            display: block;
         }
 
-        /* Oscillating Scan Line */
         @keyframes scanSlide {
             0% { transform: translateY(0); opacity: 0; }
             10% { opacity: 1; }
-            50% { transform: translateY(280px); opacity: 1; }
+            50% { transform: translateY(300px); opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(0); opacity: 0; }
         }
@@ -102,43 +94,55 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 4px;
             background: #00f3ff;
-            box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
+            box-shadow: 0 0 25px #00f3ff;
             z-index: 25;
-            animation: scanSlide 3s ease-in-out infinite;
+            animation: scanSlide 2.5s ease-in-out infinite;
         }
 
-        /* Scan Overlay Removed for Full Area Scanning */
-        .scan-overlay { display: none; }
-
-
         .scan-badge {
-            margin-top: 35px;
-            background: var(--surface-glass);
-            backdrop-filter: blur(15px);
-            padding: 10px 30px;
-            border-radius: 25px;
-            border: 1px solid rgba(0, 243, 255, 0.2);
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            text-align: center;
+            width: 280px;
         }
 
         .scan-badge p {
             color: var(--primary);
-            font-weight: 700;
+            font-weight: 800;
             font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+        }
+
+        .btn-denom {
+            background: rgba(0, 243, 255, 0.05);
+            color: var(--primary);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-denom.active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
         }
 
         .navbar {
-            height: 100px; /* Incrementado para empujar los íconos hacia arriba */
-            background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(25px);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            height: 90px;
+            background: rgba(10, 10, 10, 0.95);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding-bottom: 35px; /* Margen drástico para evitar la franja del sistema */
+            padding-bottom: 25px;
             z-index: 1000;
         }
 
@@ -146,597 +150,197 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s;
             flex: 1;
         }
 
-        .nav-item.active {
-            color: var(--primary);
-        }
+        .nav-item.active { color: var(--primary); }
 
-        .nav-icon svg {
-            width: 28px; /* Tamaño original restaurado */
-            height: 28px;
-            stroke-width: 2;
-        }
-
-        .nav-label {
-            font-size: 10px; /* Tamaño original restaurado */
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Modals & Layout Cleanup */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 10, 0.98);
-            backdrop-filter: blur(20px);
+            background: #000;
             z-index: 2000;
             display: none;
-            flex-direction: column;
             padding: 24px;
+            flex-direction: column;
             overflow-y: auto;
         }
 
-        .modal.active { display: flex; animation: slideUp 0.3s ease-out; }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-top: 20px;
-        }
+        .modal.active { display: flex; }
 
         .card {
-            background: rgba(20, 20, 20, 0.95); /* Más sólido como pidió el usuario */
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background: #111;
+            border-radius: 15px;
+            padding: 15px; border: 1px solid #333; margin-bottom: 15px;
         }
 
         #result-panel {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #111; /* Color sólido para evitar transparencia excesiva */
-            border-top: 1px solid rgba(0, 243, 255, 0.3);
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            padding: 30px 24px 100px;
+            bottom: 0; left: 0; width: 100%;
+            background: #111; padding: 25px 25px 100px;
+            border-top: 2px solid var(--primary);
             transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.4s;
             z-index: 1500;
-            box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.9);
         }
 
         #result-panel.active { transform: translateY(0); }
 
         .btn-primary {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 16px;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 15px;
-            width: 100%;
-            cursor: pointer;
+            background: var(--primary); color: #000; border: none;
+            padding: 15px; border-radius: 12px; font-weight: 800; width: 100%;
         }
-
-        .btn-denom {
-            background: rgba(0, 243, 255, 0.05);
-            color: var(--primary);
-            border: 2px solid rgba(0, 243, 255, 0.2);
-            padding: 12px 18px;
-            border-radius: 14px;
-            font-weight: 900;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            flex: 1;
-            text-transform: uppercase;
-        }
-
-        .btn-denom.active {
-            background: var(--primary);
-            color: #000;
-            border-color: var(--primary);
-            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        #reader__dashboard { display: none !important; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="series_db.js"></script>
 </head>
 
 <body>
-
-    <div class="header">
-        <!-- Espacio para la marca integrada en bg_final.jpg -->
-    </div>
-
+    <div class="header"></div>
     <div id="scanner-container">
         <div class="scanner-viewbox">
-            <video id="video" style="width: 100%; height: 100%; object-fit: cover !important;" playsinline autoplay muted></video>
+            <video id="video" playsinline autoplay muted></video>
             <div class="scan-line"></div>
         </div>
-
-        <div id="denom-selector" style="display: flex; gap: 10px; width: 100%; margin: 20px 0;">
+        <div id="denom-selector" style="display: flex; gap: 8px; width: 300px; margin: 20px 0;">
             <button class="btn-denom active" onclick="setDenom('auto', this)">AUTO</button>
             <button class="btn-denom" onclick="setDenom('10', this)">10 Bs</button>
             <button class="btn-denom" onclick="setDenom('20', this)">20 Bs</button>
             <button class="btn-denom" onclick="setDenom('50', this)">50 Bs</button>
         </div>
-
         <div class="scan-badge">
-            <p id="status-label">Cargando Inteligencia Artificial...</p>
-            <button id="camera-retry-btn" onclick="startScanner()" style="display: none; margin-top: 10px; background: var(--primary); color: #000; border: none; padding: 12px 25px; border-radius: 14px; font-weight: 900; font-size: 14px; cursor: pointer; width: 100%;">REINTENTAR CÁMARA</button>
+            <p id="status-label">Iniciando v52...</p>
         </div>
     </div>
 
     <nav class="navbar">
-        <div class="nav-item active" id="nav-scan" onclick="location.reload()">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"></rect>
-                    <path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </div>
-            <div class="nav-label">Escanear</div>
+        <div class="nav-item active" onclick="location.reload()">
+            <span>ESCANEAR</span>
         </div>
         <div class="nav-item" onclick="toggleModal('history-modal')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </div>
-            <div class="nav-label">Historial</div>
+            <span>HISTORIAL</span>
         </div>
         <div class="nav-item" onclick="document.getElementById('ocr-upload').click()">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </div>
-            <div class="nav-label">Subir Foto</div>
+            <span>SUBIR FOTO</span>
         </div>
         <input type="file" id="ocr-upload" accept="image/*" style="display: none;" onchange="handleOCRUpload(event)">
         <div class="nav-item" onclick="toggleModal('support-modal')">
-            <div class="nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="7" r="4"></circle>
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-            </div>
-            <div class="nav-label">Apoyo</div>
+            <span>APOYO</span>
         </div>
     </nav>
 
-    <!-- History Modal -->
     <div id="history-modal" class="modal">
-        <div class="modal-header">
-            <h2>Historial Inhabilitados</h2>
-            <div onclick="toggleModal('history-modal')" style="color: var(--primary); font-weight: 700;">CERRAR</div>
-        </div>
+        <h2 style="margin-bottom: 20px;">Historial</h2>
         <div id="history-list"></div>
+        <button onclick="toggleModal('history-modal')" class="btn-primary" style="margin-top: 20px;">CERRAR</button>
     </div>
 
-    <!-- Support Modal -->
     <div id="support-modal" class="modal">
-        <div class="modal-header">
-            <h2>Apoyo al Creador</h2>
-            <div onclick="toggleModal('support-modal')" style="color: var(--primary); font-weight: 700;">CERRAR</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <p style="color: var(--primary); font-weight: 800; font-size: 14px; margin-bottom: 20px; line-height: 1.4;">✨ ¡IMPULSA ESTA HERRAMIENTA! ✨<br>Escanea desde tu App bancaria para apoyar al creador</p>
-            <div style="background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-bottom: 20px;">
-                <img src="qr_apoyo.jpg" style="width: 250px; height: 250px; object-fit: contain;">
-            </div>
-            <p style="color: var(--text-secondary); font-size: 13px;">Tu contribución ayuda a seguir mejorando</p>
-        </div>
-
-        <div class="card" style="background: #111; border: 1px solid #333; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
-            <h3 style="margin-bottom: 8px; font-size: 18px; color: var(--primary);">Contacto Oficial</h3>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; line-height: 1.4;">Cualquier consulta será respondida directamente a tu correo por el creador de la herramienta.</p>
-            
-            <form id="support-form" onsubmit="handleSupportSubmit(event)">
-                <label style="display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 800;">Tu correo:</label>
-                <input type="email" name="email" class="input-field" required placeholder="ejemplo@correo.com" style="background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; width: 100%; margin-bottom: 15px;">
-                
-                <label style="display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 800;">Consulta:</label>
-                <textarea name="message" class="input-field" required rows="4" placeholder="Escribe aquí tu duda o reporte..." style="background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; width: 100%; margin-bottom: 20px;"></textarea>
-                
-                <input type="hidden" name="_to" value="gamers2asd@gmail.com">
-                <button type="submit" id="submit-btn" class="btn-primary" style="box-shadow: 0 4px 15px rgba(0, 243, 255, 0.3);">ENVIAR CORREO DIRECTO</button>
-            </form>
-            <div id="form-status" style="display: none; margin-top: 15px; padding: 15px; border-radius: 10px; text-align: center; font-size: 13px;"></div>
-        </div>
-
-        <div id="install-card" class="card" style="border-color: var(--primary); background: rgba(0, 243, 255, 0.05);">
-            <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--primary);">📲 INSTALACIÓN MANUAL</h3>
-            <p style="color: white; font-size: 13px; margin-bottom: 15px; line-height: 1.4; font-weight: 600;">
-                Si no ves el botón automático, hazlo así para ocultar el link:
-            </p>
-            
-            <div style="text-align: left; background: #000; padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px;">
-                <p style="color: var(--primary); font-size: 12px; margin-bottom: 8px;"><b>En Android (Chrome):</b></p>
-                <p style="color: var(--text-secondary); font-size: 11px;">Toca los <b>tres puntos (⋮)</b> arriba a la derecha y selecciona <b>"Agregar a la pantalla principal"</b> o <b>"Instalar aplicación"</b>.</p>
-                
-                <p style="color: var(--primary); font-size: 12px; margin: 12px 0 8px;"><b>En iPhone (Safari):</b></p>
-                <p style="color: var(--text-secondary); font-size: 11px;">Toca el icono de <b>Compartir (↑)</b> y selecciona <b>"Agregar al inicio"</b>.</p>
-            </div>
-
-            <button id="install-button" class="btn-primary" style="display: none; margin-bottom: 15px;">INSTALAR AHORA</button>
-
-            <button onclick="forceAppUpdate()" class="btn-primary" style="background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d44; font-size: 11px;">🗑️ BORRAR DATOS Y MEMORIA (requiere internet después)</button>
+        <h2 style="margin-bottom: 20px;">Soporte</h2>
+        <div class="card">
+            <p style="margin-bottom: 15px;">gamers2asd@gmail.com</p>
+            <button onclick="toggleModal('support-modal')" class="btn-primary">CERRAR</button>
         </div>
     </div>
 
-    <!-- Result Panel -->
     <div id="result-panel">
-        <div class="modal-header" style="margin-top: 0; margin-bottom: 15px;">
-            <h3>Detalle del Escaneo</h3>
-            <div onclick="closeResult()" style="color: var(--text-secondary); font-size: 12px;">CERRAR</div>
-        </div>
-        <div id="result-content" class="card"></div>
-        <button id="save-btn" class="btn-primary" onclick="saveToHistory()">GUARDAR RECHAZADO</button>
+        <h3 id="result-status" style="font-size: 24px; margin-bottom: 10px;">ESTADO</h3>
+        <p id="result-reason" style="margin-bottom: 20px; color: #ccc;"></p>
+        <button onclick="closeResult()" class="btn-primary">CONTINUAR</button>
     </div>
 
     <script>
-        let lastResult = null;
+        let ocrWorker = null;
+        let isProcessing = false;
+        let selectedDenom = 'auto';
         let rejectedNotes = JSON.parse(localStorage.getItem('rejected_notes')) || [];
 
-        function toggleModal(id) {
-            document.getElementById(id).classList.toggle('active');
-            if (id === 'history-modal') renderHistory();
-        }
-
-        function handleQRUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            document.getElementById('status-label').innerText = "Analizando Imagen...";
-
-            html5QrCode.scanFile(file, true)
-                .then(decodedText => {
-                    document.getElementById('status-label').innerText = "Listo";
-                    onScanSuccess(decodedText);
-                })
-                .catch(err => {
-                    console.error("QR Error:", err);
-                    document.getElementById('status-label').innerText = "Escaneando billete";
-                    alert("No se pudo detectar un código QR en la imagen. Intenta con otra foto más clara.");
-                });
-            
-            event.target.value = "";
-        }
-
-        async function copyAppLink() {
-            const text = `¡Te comparto BilleteSeguro BOB! El escáner profesional para billetes de Bolivia. Funciona sin internet. Ábrelo aquí e instálalo: ${window.location.href}`;
-            try {
-                await navigator.clipboard.writeText(text);
-                alert("¡Enlace copiado! Ya puedes pegarlo en WhatsApp ✅");
-            } catch (err) {
-                alert("Error al copiar. Copia el link manualmente: " + window.location.href);
-            }
-        }
-
-        async function forceAppUpdate() {
-            const confirm = window.confirm(
-                "⚠️ ATENCIÓN: Esto borrará todos los datos descargados.\n\nDespués necesitarás conexión a internet para que la app vuelva a funcionar.\n\n¿Continuar?"
-            );
-            if (!confirm) return;
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (let reg of registrations) await reg.unregister();
-                const cacheNames = await caches.keys();
-                await Promise.all(cacheNames.map(name => caches.delete(name)));
-            }
-            window.location.reload(true);
-        }
-
-        function closeResult() {
-            document.getElementById('result-panel').classList.remove('active');
-        }
-
-        async function handleSupportSubmit(event) {
-            event.preventDefault();
-            const form = event.target;
-            const btn = document.getElementById('submit-btn');
-            const status = document.getElementById('form-status');
-            
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
-            
-            try {
-                const response = await fetch("https://formspree.io/f/xvgzgeyw", {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: { 
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    status.style.display = 'block';
-                    status.style.background = 'rgba(0, 243, 255, 0.1)';
-                    status.style.color = 'var(--primary)';
-                    status.innerText = "✅ ¡Mensaje enviado! El creador te contactará pronto.";
-                    form.reset();
-                } else {
-                    throw new Error("Server error");
-                }
-            } catch (err) {
-                status.style.display = 'block';
-                status.style.background = 'rgba(255, 77, 77, 0.1)';
-                status.style.color = 'var(--error)';
-                status.innerText = "❌ Error al enviar. Por favor escribe a gamers2asd@gmail.com";
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "ENVIAR CONSULTA";
-            }
-        }
-
-        let isProcessing = false;
-        let ocrWorker = null;
-        let selectedDenom = 'auto';
+        function toggleModal(id) { document.getElementById(id).classList.toggle('active'); if (id === 'history-modal') renderHistory(); }
+        function closeResult() { document.getElementById('result-panel').classList.remove('active'); }
+        function setDenom(val, btn) { selectedDenom = val; document.querySelectorAll('.btn-denom').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 
         async function initOCR() {
             try {
-                if (typeof Tesseract === 'undefined') throw new Error("Tesseract no cargó");
-                document.getElementById('status-label').innerText = "Iniciando OCR...";
-                
-                ocrWorker = await Tesseract.createWorker('eng', 1, {
-                    logger: m => {
-                        if (m.status === 'initializing api') {
-                            document.getElementById('status-label').innerText = "Cargando Motor...";
-                        }
-                    }
-                });
-
-                await ocrWorker.setParameters({
-                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                    tessedit_pageseg_mode: '7',
-                });
-
-                document.getElementById('status-label').innerText = "Apunta al # de serie";
+                document.getElementById('status-label').innerText = "IA CARGANDO...";
+                ocrWorker = await Tesseract.createWorker('eng', 1);
+                await ocrWorker.setParameters({ tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', tessedit_pageseg_mode: '7' });
+                document.getElementById('status-label').innerText = "APUNTA AL BILLETE";
             } catch (err) {
-                console.error("OCR Fail:", err);
-                document.getElementById('status-label').innerText = "IA: Esperando conexión...";
-                setTimeout(initOCR, 3000);
+                document.getElementById('status-label').innerText = "ERROR IA: RECARGA";
             }
         }
 
         async function startScanner() {
             const video = document.getElementById('video');
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" } 
-                });
+                document.getElementById('status-label').innerText = "CÁMARA...";
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
-                document.getElementById('camera-retry-btn').style.display = 'none';
-                
-                video.onloadedmetadata = () => {
-                    video.play();
-                    requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                };
-            } catch (err) {
-                console.error("Error cámara:", err);
-                document.getElementById('status-label').innerText = "Cámara bloqueada o no detectada";
-                document.getElementById('camera-retry-btn').style.display = 'inline-block';
-            }
-        }
-
-        function setDenom(val, btn) {
-            selectedDenom = val;
-            document.querySelectorAll('.btn-denom').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        async function processFrame(video, canvas, ctx) {
-            if (isProcessing || !ocrWorker) {
-                requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                return;
-            }
-
-            // Detección en área COMPLETA (400x400 para rapidez)
-            canvas.width = 400;
-            canvas.height = 400;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const imageData = canvas.toDataURL('image/jpeg', 0.4); 
-            
-            isProcessing = true;
-            try {
-                const { data: { text } } = await ocrWorker.recognize(imageData);
-                
-                // Throttle para gama baja
-                setTimeout(() => {
-                    isProcessing = false;
-                    requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                }, 600); 
-
-                if (text) {
-                    const colorData = detectDominantColor(ctx);
-                    parseOCRText(text, colorData);
-                }
-            } catch (err) {
-                isProcessing = false;
-                requestAnimationFrame(() => processFrame(video, canvas, ctx));
-            }
-        }
-
-        function detectDominantColor(ctx) {
-            const data = ctx.getImageData(0, 0, 400, 400).data;
-            let r=0, g=0, b=0;
-            for (let i=0; i<data.length; i+=100) { // muestreo más saltado para velocidad
-                r += data[i]; g += data[i+1]; b += data[i+2];
-            }
-            const count = data.length / 100;
-            r /= count; g /= count; b /= count;
-            if (b > r && b > g) return "10";
-            if (r > g && r > b && g > b/2) return "20";
-            if (r > g && b > g) return "50";
-            return null;
-        }
-
-        async function handleOCRUpload(event) {
-            const file = event.target.files[0];
-            if (!file || !ocrWorker) {
-                if (!ocrWorker) alert("La IA aún se está cargando...");
-                return;
-            }
-
-            document.getElementById('status-label').innerText = "Analizando fotografía...";
-            const img = new Image();
-            img.onload = async () => {
+                await video.play();
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = 1000;
-                canvas.height = (img.height / img.width) * 1000;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                try {
-                    const { data: { text } } = await ocrWorker.recognize(canvas.toDataURL('image/jpeg', 0.8));
-                    parseOCRText(text, null);
-                } catch (err) {
-                    alert("Error leyendo foto.");
-                } finally {
-                    document.getElementById('status-label').innerText = "Apunta al # de serie";
-                    event.target.value = "";
-                }
-            };
-            img.src = URL.createObjectURL(file);
-        }
-
-        function parseOCRText(text, colorDenom) {
-            const denom = selectedDenom !== 'auto' ? selectedDenom : colorDenom;
-            const match = text.match(/\b(\d{8,9})\s*([A-C])\b/i);
-            
-            if (match) {
-                const serial = match[1];
-                const series = match[2].toUpperCase();
-                const result = validateBolivianBill(series, denom, serial);
-                
-                if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 3000)) {
-                    lastResult = {
-                        id: Date.now(),
-                        status: result.status,
-                        color: result.color,
-                        reason: result.reason,
-                        qr: `OCR: ${series} ${serial}`,
-                        denom: denom ? `${denom} Bs` : "BS ?",
-                        date: new Date().toLocaleString()
-                    };
-                    showResult(lastResult);
-                    if (window.navigator.vibrate) window.navigator.vibrate(result.status === "VÁLIDO" ? 100 : [100, 50, 100]);
-                }
+                requestAnimationFrame(() => processLoop(video, canvas, ctx));
+            } catch (err) {
+                document.getElementById('status-label').innerText = "ERROR CÁMARA";
             }
         }
 
-        function showResult(result) {
-            const content = document.getElementById('result-content');
-            content.style.borderLeft = `4px solid ${result.color}`;
-            content.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div>
-                        <p style="font-size: 11px; color: var(--text-secondary);">ESTADO</p>
-                        <p style="color: ${result.color}; font-weight: 800; font-size: 20px;">${result.status}</p>
-                    </div>
-                    <div style="background: ${result.color}; color: black; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 13px;">
-                        ${result.denom}
-                    </div>
-                </div>
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Motivo</p>
-                <p style="font-size: 14px; color: white; font-weight: 600; margin-bottom: 12px;">${result.reason}</p>
-                
-                <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Texto Detectado</p>
-                <p style="font-size: 12px; color: var(--text-secondary); word-break: break-all;">${result.qr}</p>
-            `;
-            document.getElementById('save-btn').style.display = result.status === "INHABILITADO" ? "block" : "none";
-            document.getElementById('result-panel').classList.add('active');
+        async function processLoop(video, canvas, ctx) {
+            if (isProcessing || !ocrWorker) {
+                requestAnimationFrame(() => processLoop(video, canvas, ctx));
+                return;
+            }
+            canvas.width = 400; canvas.height = 400;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            isProcessing = true;
+            try {
+                const { data: { text } } = await ocrWorker.recognize(canvas.toDataURL('image/jpeg', 0.5));
+                if (text) parseText(text);
+                setTimeout(() => { isProcessing = false; requestAnimationFrame(() => processLoop(video, canvas, ctx)); }, 800);
+            } catch (err) {
+                isProcessing = false;
+                requestAnimationFrame(() => processLoop(video, canvas, ctx));
+            }
         }
 
-        function saveToHistory() {
-            rejectedNotes.unshift(lastResult);
-            localStorage.setItem('rejected_notes', JSON.stringify(rejectedNotes));
-            alert("Guardado en historial.");
-            closeResult();
+        function parseText(text) {
+            const m = text.match(/\b(\d{8,9})\s*([A-C])\b/i);
+            if (m) {
+                const res = validateBolivianBill(m[2].toUpperCase(), selectedDenom, m[1]);
+                if (res.status === "INHABILITADO") {
+                    document.getElementById('result-status').innerText = res.status;
+                    document.getElementById('result-status').style.color = res.color;
+                    document.getElementById('result-reason').innerText = res.reason;
+                    document.getElementById('result-panel').classList.add('active');
+                    rejectedNotes.unshift({ reason: res.reason, qr: `OCR: ${m[2].toUpperCase()} ${m[1]}` });
+                    localStorage.setItem('rejected_notes', JSON.stringify(rejectedNotes));
+                }
+            }
         }
 
         function renderHistory() {
             const list = document.getElementById('history-list');
-            list.innerHTML = rejectedNotes.length ? rejectedNotes.map(n => `
-                <div class="card" style="border-left: 4px solid var(--error); background: #111;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="font-weight: 800; color: var(--error); font-size: 14px;">${n.denom}</span>
-                        <span style="font-size: 10px; color: var(--text-secondary);">${n.date}</span>
-                    </div>
-                    <p style="font-size: 12px; color: white; margin: 8px 0;">${n.reason}</p>
-                    <p style="font-size: 10px; color: var(--text-secondary); word-break: break-all;">${n.qr}</p>
-                </div>
-            `).join('') : '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">No hay billetes rechazados en tu historial local.</p>';
+            list.innerHTML = rejectedNotes.map(n => `<div class="card"><p style="color:red; font-weight:800;">RECHAZADO</p><p>${n.reason}</p><p style="font-size:10px; color:#666;">${n.qr}</p></div>`).join('') || '<p>Vacío</p>';
         }
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js');
+        async function handleOCRUpload(event) {
+            const file = event.target.files[0]; if (!file || !ocrWorker) return;
+            const img = new Image(); img.src = URL.createObjectURL(file);
+            img.onload = async () => {
+                const c = document.createElement('canvas'); c.width = 800; c.height = (img.height/img.width)*800;
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                const { data: { text } } = await ocrWorker.recognize(c);
+                parseText(text);
+            };
         }
 
-        // Lógica de Instalación PWA
-        let deferredPrompt;
-        const installCard = document.getElementById('install-card');
-        const installButton = document.getElementById('install-button');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installCard.style.display = 'block';
-        });
-
-        installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installCard.style.display = 'none';
-                }
-                deferredPrompt = null;
-            }
-        });
-
-        window.addEventListener('appinstalled', () => {
-            installCard.style.display = 'none';
-            deferredPrompt = null;
-        });
-
-        // INICIAR TODO
-        startScanner();
-        initOCR();
+        window.onload = () => { initOCR(); startScanner(); };
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
     </script>
 </body>
-
 </html>
