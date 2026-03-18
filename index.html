@@ -475,39 +475,32 @@
 
         async function initOCR() {
             try {
+                if (typeof Tesseract === 'undefined') {
+                    throw new Error("Tesseract no cargó");
+                }
+                
                 document.getElementById('status-label').innerText = "Iniciando OCR...";
                 
-                // Inicialización ultra-robusta de Tesseract.js v5 vía CDN
-                // Esto garantiza que el motor y los wasm se carguen correctamente
+                // Inicialización ultra-simplificada v5
+                // Al no pasarle rutas, usa el CDN oficial de forma automática y segura
                 ocrWorker = await Tesseract.createWorker('eng', 1, {
                     logger: m => {
                         if (m.status === 'initializing api') {
-                            document.getElementById('status-label').innerText = "Preparando IA...";
+                            document.getElementById('status-label').innerText = "Cargando Motor...";
                         }
                     }
                 });
 
-                // No necesitamos setear paths manuales si usamos la versión CDN nativa
-                // pero sí debemos cargar e inicializar
-                // En v5, si pasamos 'eng' al createWorker, ya suele estar casi listo,
-                // pero estos pasos garantizan que el motor LSTM esté activo.
-
-                await ocrWorker.loadLanguage('eng');
-                await ocrWorker.initialize('eng');
-
-                // Whitelist estricta: solo números y letras relevantes para máxima velocidad
                 await ocrWorker.setParameters({
                     tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                    tessedit_pageseg_mode: '7',  // Tratar imagen como línea única de texto
-                    classify_min_score: '0',
+                    tessedit_pageseg_mode: '7',
                 });
 
                 document.getElementById('status-label').innerText = "Apunta al # de serie";
             } catch (err) {
-                console.error("Error crítico OCR:", err);
-                document.getElementById('status-label').innerText = "OCR: Error de archivos locales";
-                // Reintento silencioso si falla
-                setTimeout(initOCR, 5000);
+                console.error("OCR Fail:", err);
+                document.getElementById('status-label').innerText = "IA: Esperando conexión...";
+                setTimeout(initOCR, 3000);
             }
         }
 
