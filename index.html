@@ -434,21 +434,14 @@
             const btn = document.getElementById('submit-btn');
             const status = document.getElementById('form-status');
             
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => { data[key] = value; });
-
             btn.disabled = true;
             btn.innerText = "ENVIANDO...";
             
             try {
                 const response = await fetch("https://formspree.io/f/xvgzgeyw", {
                     method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: { 
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
+                    body: new FormData(form),
+                    headers: { 'Accept': 'application/json' }
                 });
                 
                 if (response.ok) {
@@ -458,7 +451,7 @@
                     status.innerText = "✅ ¡Mensaje enviado! El creador te contactará pronto.";
                     form.reset();
                 } else {
-                    throw new Error();
+                    throw new Error("Server error");
                 }
             } catch (err) {
                 status.style.display = 'block';
@@ -476,14 +469,12 @@
 
         async function initOCR() {
             try {
-                document.getElementById('status-label').innerText = "Iniciando OCR...";
-                
-                // Inicialización ultra-robusta de Tesseract.js v5 con rutas absolutas
-                const basePath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                // Inicialización ultra-robusta de Tesseract.js v5
+                // Usamos CDN para el motor (worker/wasm) para evitar errores de variantes (SIMD/LSTM)
+                // Usamos ruta local para el archivo de lenguaje (12MB)
+                const localPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                 ocrWorker = await Tesseract.createWorker('eng', 1, {
-                    workerPath: basePath + 'tesseract.worker.min.js',
-                    langPath: basePath,
-                    corePath: basePath + 'tesseract-core.wasm',
+                    langPath: localPath,
                     gzip: true,
                     logger: m => {
                         if (m.status === 'initializing api') {

@@ -1,19 +1,16 @@
-const CACHE_NAME = 'billete-seguro-v43';
+const CACHE_NAME = 'billete-seguro-v44';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './series_db.js',
   './tesseract.min.js',
-  './tesseract.worker.min.js',
-  './tesseract-core.wasm',
   './eng.traineddata.gz',
   './bg_final.jpg',
   './qr_apoyo.jpg',
   './app_icon_v20.png'
 ];
 
-// Install Event
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -23,7 +20,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate Event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -38,23 +34,29 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones de analíticas o externas si las hubiera
-  if (!event.request.url.startsWith(self.location.origin)) return;
+  const url = event.request.url;
+  
+  // Cache dinámico para recursos de la IA (CDN)
+  if (url.includes('unpkg.com') || url.includes('jsdelivr.net')) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((networkResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  if (!url.startsWith(self.location.origin)) return;
 
   event.respondWith(
     caches.match(event.request).then((response) => {
-      if (response) return response;
-      
-      return fetch(event.request).then((networkResponse) => {
-        // No cachear dinámicamente para evitar llenar el almacenamiento,
-        // solo usar lo pre-cacheado en ASSETS
-        return networkResponse;
-      }).catch(() => {
-        // Si no hay red ni cache, fallar silenciosamente
-        return null;
-      });
+      return response || fetch(event.request);
     })
   );
 });
