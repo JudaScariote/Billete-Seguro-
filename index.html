@@ -48,9 +48,9 @@
             position: relative;
         }
 
-        /* 1. Header - Empty but preserved for spacing since branding is in BG */
+        /* 1. Header - Pushed down to clear BG branding */
         .header {
-            padding: 100px 20px 20px; /* Shift content down to respect BG logo */
+            padding: 160px 20px 20px; 
             z-index: 100;
         }
 
@@ -109,44 +109,9 @@
             animation: scanSlide 3s ease-in-out infinite;
         }
 
-        /* Scan Zone Overlay */
-        .scan-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 20;
-            pointer-events: none;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* Scan Overlay Removed for Full Area Scanning */
+        .scan-overlay { display: none; }
 
-        .scan-target {
-            width: 95%;
-            height: 90px;
-            border: 3px solid var(--primary);
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-            position: relative;
-        }
-
-        .scan-target::after {
-            content: "CENTRA AQUÍ EL # DE SERIE";
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--primary);
-            font-size: 11px;
-            letter-spacing: 1px;
-            font-weight: 900;
-            width: 100%;
-            text-align: center;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-        }
 
         .scan-badge {
             margin-top: 35px;
@@ -309,9 +274,6 @@
     <div id="scanner-container">
         <div class="scanner-viewbox">
             <video id="video" style="width: 100%; height: 100%; object-fit: cover !important;" playsinline autoplay muted></video>
-            <div class="scan-overlay">
-                <div class="scan-target"></div>
-            </div>
             <div class="scan-line"></div>
         </div>
 
@@ -601,31 +563,22 @@
                 return;
             }
 
-            // Capturar el área de interés (el recuadro de la scan-zone)
-            // Para gama baja, usamos un canvas MUY pequeño para OCR ultrarrápido
+            // Detección en área COMPLETA (400x400 para rapidez)
             canvas.width = 400;
-            canvas.height = 100;
+            canvas.height = 400;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Calculamos dónde está el recuadro proporcionalmente al video
-            const vW = video.videoWidth;
-            const vH = video.videoHeight;
-            const cropW = vW * 0.95;
-            const cropH = vH * 0.3;
-            const startX = (vW - cropW) / 2;
-            const startY = (vH - cropH) / 2;
-
-            ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg', 0.5); 
+            const imageData = canvas.toDataURL('image/jpeg', 0.4); 
             
             isProcessing = true;
             try {
                 const { data: { text } } = await ocrWorker.recognize(imageData);
                 
-                // OCR Throttling (Respiro para CPUs de gama baja)
+                // Throttle para gama baja
                 setTimeout(() => {
                     isProcessing = false;
                     requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                }, 500); // 0.5 segundos de pausa entre lecturas
+                }, 600); 
 
                 if (text) {
                     const colorData = detectDominantColor(ctx);
@@ -638,15 +591,13 @@
         }
 
         function detectDominantColor(ctx) {
-            // Detección simple para determinar denominación por color
-            const data = ctx.getImageData(0, 0, 400, 100).data;
+            const data = ctx.getImageData(0, 0, 400, 400).data;
             let r=0, g=0, b=0;
-            for (let i=0; i<data.length; i+=16) {
+            for (let i=0; i<data.length; i+=100) { // muestreo más saltado para velocidad
                 r += data[i]; g += data[i+1]; b += data[i+2];
             }
-            const count = data.length / 16;
+            const count = data.length / 100;
             r /= count; g /= count; b /= count;
-
             if (b > r && b > g) return "10";
             if (r > g && r > b && g > b/2) return "20";
             if (r > g && b > g) return "50";
@@ -781,6 +732,10 @@
             installCard.style.display = 'none';
             deferredPrompt = null;
         });
+
+        // INICIAR TODO
+        startScanner();
+        initOCR();
     </script>
 </body>
 
