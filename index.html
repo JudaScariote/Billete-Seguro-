@@ -125,25 +125,27 @@
         }
 
         .scan-target {
-            width: 90%;
-            height: 60px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            width: 95%;
+            height: 90px;
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
             position: relative;
         }
 
         .scan-target::after {
             content: "CENTRA AQUÍ EL # DE SERIE";
             position: absolute;
-            bottom: -25px;
+            bottom: -35px;
             left: 50%;
             transform: translateX(-50%);
             color: var(--primary);
-            font-size: 8px;
-            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-weight: 900;
             width: 100%;
             text-align: center;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
 
         .scan-badge {
@@ -271,22 +273,25 @@
         }
 
         .btn-denom {
-            background: #252525;
-            color: var(--text-secondary);
-            border: 1px solid #333;
-            padding: 8px 12px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 11px;
+            background: rgba(0, 243, 255, 0.05);
+            color: var(--primary);
+            border: 2px solid rgba(0, 243, 255, 0.2);
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 900;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1;
+            text-transform: uppercase;
         }
 
         .btn-denom.active {
             background: var(--primary);
             color: #000;
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         #reader__dashboard { display: none !important; }
@@ -302,13 +307,6 @@
     </div>
 
     <div id="scanner-container">
-        <div id="denom-selector" style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="btn-denom active" onclick="setDenom('auto', this)">AUTO</button>
-            <button class="btn-denom" onclick="setDenom('10', this)">10 Bs</button>
-            <button class="btn-denom" onclick="setDenom('20', this)">20 Bs</button>
-            <button class="btn-denom" onclick="setDenom('50', this)">50 Bs</button>
-        </div>
-
         <div class="scanner-viewbox">
             <video id="video" style="width: 100%; height: 100%; object-fit: cover !important;" playsinline autoplay muted></video>
             <div class="scan-overlay">
@@ -317,9 +315,16 @@
             <div class="scan-line"></div>
         </div>
 
+        <div id="denom-selector" style="display: flex; gap: 10px; width: 100%; margin: 20px 0;">
+            <button class="btn-denom active" onclick="setDenom('auto', this)">AUTO</button>
+            <button class="btn-denom" onclick="setDenom('10', this)">10 Bs</button>
+            <button class="btn-denom" onclick="setDenom('20', this)">20 Bs</button>
+            <button class="btn-denom" onclick="setDenom('50', this)">50 Bs</button>
+        </div>
+
         <div class="scan-badge">
             <p id="status-label">Cargando Inteligencia Artificial...</p>
-            <button id="camera-retry-btn" onclick="startScanner()" style="display: none; margin-top: 10px; background: var(--primary); color: #000; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 800; font-size: 11px; cursor: pointer;">ACTIVAR CÁMARA</button>
+            <button id="camera-retry-btn" onclick="startScanner()" style="display: none; margin-top: 10px; background: var(--primary); color: #000; border: none; padding: 12px 25px; border-radius: 14px; font-weight: 900; font-size: 14px; cursor: pointer; width: 100%;">REINTENTAR CÁMARA</button>
         </div>
     </div>
 
@@ -533,17 +538,13 @@
 
         let isProcessing = false;
         let ocrWorker = null;
+        let selectedDenom = 'auto';
 
         async function initOCR() {
             try {
-                if (typeof Tesseract === 'undefined') {
-                    throw new Error("Tesseract no cargó");
-                }
-                
+                if (typeof Tesseract === 'undefined') throw new Error("Tesseract no cargó");
                 document.getElementById('status-label').innerText = "Iniciando OCR...";
                 
-                // Inicialización ultra-simplificada v5
-                // Al no pasarle rutas, usa el CDN oficial de forma automática y segura
                 ocrWorker = await Tesseract.createWorker('eng', 1, {
                     logger: m => {
                         if (m.status === 'initializing api') {
@@ -588,181 +589,106 @@
             }
         }
 
-        // --- DETECCIÓN DE COLOR POR MATIZ (HSV/HUE) - Más preciso que RGB ---
-        // Los rangos de matiz (hue 0-360°) son estables bajo distintas condiciones de luz
-        // Billetes bolivianos: 10=Azul, 20=Naranja, 50=Violeta, 100=Rojo, 200=Café/Verde
-
-        function getDenominationByColor(videoOrCtx, width, height, isVideo) {
-            try {
-                let imageData;
-                if (isVideo) {
-                    // Leer del frame completo del video para mejor detección de color
-                    const colorCanvas = document.createElement('canvas');
-                    colorCanvas.width = Math.min(width, 320); // pequeño para rapidez
-                    colorCanvas.height = Math.min(height, 240);
-                    const scale = colorCanvas.width / width;
-                    const cCtx = colorCanvas.getContext('2d');
-                    cCtx.drawImage(videoOrCtx, 0, 0, width, height, 0, 0, colorCanvas.width, colorCanvas.height);
-                    imageData = cCtx.getImageData(0, 0, colorCanvas.width, colorCanvas.height);
-                } else {
-                    imageData = videoOrCtx.getImageData(0, 0, width, height);
-                }
-                const data = imageData.data;
-                const votes = { "10": 0, "20": 0, "50": 0, "100": 0, "200": 0 };
-
-                // Muestrear cada 8 píxeles para rendimiento
-                for (let i = 0; i < data.length; i += 32) {
-                    const r = data[i] / 255, g = data[i+1] / 255, b = data[i+2] / 255;
-                    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-                    const delta = max - min;
-                    const v = max;
-
-                    // Ignorar píxeles grises, blancos o muy oscuros (sin color definido)
-                    if (delta < 0.15 || v < 0.12 || v > 0.96) continue;
-
-                    // Calcular matiz (hue) 0-360°
-                    let h = 0;
-                    if (max === r) h = ((g - b) / delta) % 6;
-                    else if (max === g) h = (b - r) / delta + 2;
-                    else h = (r - g) / delta + 4;
-                    h = h * 60;
-                    if (h < 0) h += 360;
-
-                    // Rangos de matiz para billetes bolivianos
-                    if (h >= 195 && h <= 265) votes["10"]++;      // Azul
-                    else if (h >= 15 && h <= 52) votes["20"]++;   // Naranja
-                    else if (h >= 265 && h <= 325) votes["50"]++; // Violeta
-                    else if (h >= 325 || h <= 14) votes["100"]++; // Rojo
-                    else if (h >= 52 && h <= 145) votes["200"]++; // Café/verde oliva
-                }
-
-                const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
-                const total = Object.values(votes).reduce((a, b) => a + b, 0);
-                // Retornar solo si hay suficientes votos de color y es claro ganador
-                if (sorted[0][1] > 20 && total > 0 && (sorted[0][1] / total) > 0.30) {
-                    return sorted[0][0];
-                }
-                return null;
-            } catch (err) {
-                console.error("Error color:", err);
-                return null;
-            }
-        }
-
-        async function processFrame(video, canvas, ctx) {
-            if (isProcessing) {
-                requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                return;
-            }
-
-            isProcessing = true;
-
-            const vW = video.videoWidth;
-            const vH = video.videoHeight;
-
-            if (vW <= 0) {
-                isProcessing = false;
-                requestAnimationFrame(() => processFrame(video, canvas, ctx));
-                return;
-            }
-
-            // 1. Detección de color en frame completo (instantáneo, sin OCR)
-            const colorDenom = getDenominationByColor(video, vW, vH, true);
-
-            // 2. Recorte SOLO para OCR del número de serie: 90% ancho, 30% altura central
-            const cropW = vW * 0.9;
-            const cropH = vH * 0.30;
-            const startX = (vW - cropW) / 2;
-            const startY = (vH - cropH) / 2;
-
-            // Escalar a máx 480px de ancho para OCR ultrarrápido (3-4x más rápido)
-            const MAX_OCR_W = 480;
-            const scale = cropW > MAX_OCR_W ? MAX_OCR_W / cropW : 1;
-            canvas.width = Math.round(cropW * scale);
-            canvas.height = Math.round(cropH * scale);
-            ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, canvas.width, canvas.height);
-
-            try {
-                const { data: { text } } = await ocrWorker.recognize(canvas);
-                parseOCRText(text, colorDenom);
-            } catch (err) {
-                console.error("OCR Error:", err);
-            }
-
-            isProcessing = false;
-            requestAnimationFrame(() => processFrame(video, canvas, ctx));
-        }
-
-        async function handleOCRUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            document.getElementById('status-label').innerText = "Procesando Imagen...";
-
-            try {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                await new Promise(resolve => img.onload = resolve);
-
-                // Detectar color del billete completo
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = img.width;
-                tempCanvas.height = img.height;
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.drawImage(img, 0, 0);
-                const colorDenom = getDenominationByColor(tempCtx, img.width, img.height, false);
-
-                // OCR solo en la franja central del número de serie
-                const ocrCanvas = document.createElement('canvas');
-                const MAX_OCR_W = 480;
-                const scale = img.width > MAX_OCR_W ? MAX_OCR_W / img.width : 1;
-                const cropH = img.height * 0.35;
-                const cropStartY = img.height * 0.325;
-                ocrCanvas.width = Math.round(img.width * scale);
-                ocrCanvas.height = Math.round(cropH * scale);
-                const oCtx = ocrCanvas.getContext('2d');
-                oCtx.drawImage(img, 0, cropStartY, img.width, cropH, 0, 0, ocrCanvas.width, ocrCanvas.height);
-
-                if (!ocrWorker) {
-                    throw new Error("OCR no inicializado");
-                }
-                const { data: { text } } = await ocrWorker.recognize(ocrCanvas);
-                document.getElementById('status-label').innerText = "Apunta al # de serie";
-                parseOCRText(text, colorDenom);
-
-            } catch (err) {
-                console.error("OCR Error:", err);
-                document.getElementById('status-label').innerText = "Error leyendo foto";
-                alert("La inteligencia artificial aún se está cargando o hubo un error. Intenta de nuevo en unos segundos.");
-            }
-            event.target.value = "";
-        }
-
-        let selectedDenom = 'auto';
-
         function setDenom(val, btn) {
             selectedDenom = val;
             document.querySelectorAll('.btn-denom').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         }
 
-        function parseOCRText(text, colorDenom) {
-            let series = "";
-            let serial = "";
-
-            // PRIORIDAD: Selección manual > Detección automática de color
-            let denom = selectedDenom !== 'auto' ? selectedDenom : (colorDenom || "Desconocido");
-
-            // El USUARIO solicitó ESTRICTAMENTE: 8 a 9 dígitos, UN ESPACIO, y luego la Letra (A, B o C)
-            // Ejemplo: "078510389 B" (permitimos \s* en vez de \s+ por si la cámara rápida borronea el espacio pero las letras están separadas visualmente)
-            const strictMatch = text.match(/\b(\d{8,9})\s*([A-C])\b/i);
-
-            if (strictMatch) {
-                serial = strictMatch[1];
-                series = strictMatch[2].toUpperCase();
+        async function processFrame(video, canvas, ctx) {
+            if (isProcessing || !ocrWorker) {
+                requestAnimationFrame(() => processFrame(video, canvas, ctx));
+                return;
             }
 
-            if (serial && series) {
+            // Capturar el área de interés (el recuadro de la scan-zone)
+            // Para gama baja, usamos un canvas MUY pequeño para OCR ultrarrápido
+            canvas.width = 400;
+            canvas.height = 100;
+            
+            // Calculamos dónde está el recuadro proporcionalmente al video
+            const vW = video.videoWidth;
+            const vH = video.videoHeight;
+            const cropW = vW * 0.95;
+            const cropH = vH * 0.3;
+            const startX = (vW - cropW) / 2;
+            const startY = (vH - cropH) / 2;
+
+            ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg', 0.5); 
+            
+            isProcessing = true;
+            try {
+                const { data: { text } } = await ocrWorker.recognize(imageData);
+                
+                // OCR Throttling (Respiro para CPUs de gama baja)
+                setTimeout(() => {
+                    isProcessing = false;
+                    requestAnimationFrame(() => processFrame(video, canvas, ctx));
+                }, 500); // 0.5 segundos de pausa entre lecturas
+
+                if (text) {
+                    const colorData = detectDominantColor(ctx);
+                    parseOCRText(text, colorData);
+                }
+            } catch (err) {
+                isProcessing = false;
+                requestAnimationFrame(() => processFrame(video, canvas, ctx));
+            }
+        }
+
+        function detectDominantColor(ctx) {
+            // Detección simple para determinar denominación por color
+            const data = ctx.getImageData(0, 0, 400, 100).data;
+            let r=0, g=0, b=0;
+            for (let i=0; i<data.length; i+=16) {
+                r += data[i]; g += data[i+1]; b += data[i+2];
+            }
+            const count = data.length / 16;
+            r /= count; g /= count; b /= count;
+
+            if (b > r && b > g) return "10";
+            if (r > g && r > b && g > b/2) return "20";
+            if (r > g && b > g) return "50";
+            return null;
+        }
+
+        async function handleOCRUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !ocrWorker) {
+                if (!ocrWorker) alert("La IA aún se está cargando...");
+                return;
+            }
+
+            document.getElementById('status-label').innerText = "Analizando fotografía...";
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1000;
+                canvas.height = (img.height / img.width) * 1000;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                try {
+                    const { data: { text } } = await ocrWorker.recognize(canvas.toDataURL('image/jpeg', 0.8));
+                    parseOCRText(text, null);
+                } catch (err) {
+                    alert("Error leyendo foto.");
+                } finally {
+                    document.getElementById('status-label').innerText = "Apunta al # de serie";
+                    event.target.value = "";
+                }
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        function parseOCRText(text, colorDenom) {
+            const denom = selectedDenom !== 'auto' ? selectedDenom : colorDenom;
+            const match = text.match(/\b(\d{8,9})\s*([A-C])\b/i);
+            
+            if (match) {
+                const serial = match[1];
+                const series = match[2].toUpperCase();
                 const result = validateBolivianBill(series, denom, serial);
                 
                 if (result.status === "INHABILITADO" || !lastResult || (Date.now() - lastResult.id > 3000)) {
@@ -772,7 +698,7 @@
                         color: result.color,
                         reason: result.reason,
                         qr: `OCR: ${series} ${serial}`,
-                        denom: denom !== "Desconocido" ? `${denom} Bs` : "BS ?",
+                        denom: denom ? `${denom} Bs` : "BS ?",
                         date: new Date().toLocaleString()
                     };
                     showResult(lastResult);
@@ -804,27 +730,25 @@
             document.getElementById('result-panel').classList.add('active');
         }
 
-        startScanner();
-        initOCR();
-
         function saveToHistory() {
             rejectedNotes.unshift(lastResult);
             localStorage.setItem('rejected_notes', JSON.stringify(rejectedNotes));
-            alert("Billete guardado en el historial.");
+            alert("Guardado en historial.");
             closeResult();
         }
 
         function renderHistory() {
             const list = document.getElementById('history-list');
             list.innerHTML = rejectedNotes.length ? rejectedNotes.map(n => `
-                <div class="card" style="border-left: 4px solid var(--error);">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="font-weight: 800; color: white;">INHABILITADO</span>
-                        <span style="font-size: 11px; color: var(--text-secondary);">${n.date}</span>
+                <div class="card" style="border-left: 4px solid var(--error); background: #111;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span style="font-weight: 800; color: var(--error); font-size: 14px;">${n.denom}</span>
+                        <span style="font-size: 10px; color: var(--text-secondary);">${n.date}</span>
                     </div>
-                    <p style="font-size: 12px; color: #ffadad; margin-top: 8px; word-break: break-all;">${n.qr}</p>
+                    <p style="font-size: 12px; color: white; margin: 8px 0;">${n.reason}</p>
+                    <p style="font-size: 10px; color: var(--text-secondary); word-break: break-all;">${n.qr}</p>
                 </div>
-             `).join('') : '<p style="text-align:center; padding:40px; color:#666;">No hay registros.</p>';
+            `).join('') : '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">No hay billetes rechazados en tu historial local.</p>';
         }
 
         if ('serviceWorker' in navigator) {
