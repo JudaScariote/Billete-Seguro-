@@ -105,8 +105,45 @@
             height: 3px;
             background: #00f3ff;
             box-shadow: 0 0 30px #00f3ff, 0 0 60px #00f3ff;
-            z-index: 20;
+            z-index: 25;
             animation: scanSlide 3s ease-in-out infinite;
+        }
+
+        /* Scan Zone Overlay */
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-target {
+            width: 90%;
+            height: 60px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .scan-target::after {
+            content: "CENTRA AQUÍ EL # DE SERIE";
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--primary);
+            font-size: 8px;
+            font-weight: 800;
+            width: 100%;
+            text-align: center;
         }
 
         .scan-badge {
@@ -233,15 +270,23 @@
             cursor: pointer;
         }
 
-        .input-field {
-            width: 100%;
+        .btn-denom {
             background: #252525;
+            color: var(--text-secondary);
             border: 1px solid #333;
-            border-radius: 12px;
-            padding: 14px;
-            color: white;
-            font-size: 14px;
-            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-denom.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
         }
 
         #reader__dashboard { display: none !important; }
@@ -257,8 +302,18 @@
     </div>
 
     <div id="scanner-container">
-        <div class="scanner-viewbox" style="margin-top: 20px;">
+        <div id="denom-selector" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-denom active" onclick="setDenom('auto', this)">AUTO</button>
+            <button class="btn-denom" onclick="setDenom('10', this)">10 Bs</button>
+            <button class="btn-denom" onclick="setDenom('20', this)">20 Bs</button>
+            <button class="btn-denom" onclick="setDenom('50', this)">50 Bs</button>
+        </div>
+
+        <div class="scanner-viewbox">
             <video id="video" style="width: 100%; height: 100%; object-fit: cover !important;" playsinline autoplay muted></video>
+            <div class="scan-overlay">
+                <div class="scan-target"></div>
+            </div>
             <div class="scan-line"></div>
         </div>
 
@@ -330,14 +385,19 @@
             <p style="color: var(--text-secondary); font-size: 13px;">Tu contribución ayuda a seguir mejorando</p>
         </div>
 
-        <div class="card" style="background: #151515; border: 1px solid #333;">
-            <h3 style="margin-bottom: 15px; font-size: 16px;">¿Necesitas ayuda?</h3>
-            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">Ingresa tu correo y consulta para contactar al creador:</p>
+        <div class="card" style="background: #111; border: 1px solid #333; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+            <h3 style="margin-bottom: 8px; font-size: 18px; color: var(--primary);">Contacto Oficial</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px; line-height: 1.4;">Cualquier consulta será respondida directamente a tu correo por el creador de la herramienta.</p>
+            
             <form id="support-form" onsubmit="handleSupportSubmit(event)">
-                <input type="email" name="email" class="input-field" required placeholder="tu@correo.com" style="background: #000;">
-                <textarea name="message" class="input-field" required rows="4" placeholder="Escribe aquí tu consulta..." style="background: #000;"></textarea>
+                <label style="display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 800;">Tu correo:</label>
+                <input type="email" name="email" class="input-field" required placeholder="ejemplo@correo.com" style="background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; width: 100%; margin-bottom: 15px;">
+                
+                <label style="display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 800;">Consulta:</label>
+                <textarea name="message" class="input-field" required rows="4" placeholder="Escribe aquí tu duda o reporte..." style="background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; color: white; width: 100%; margin-bottom: 20px;"></textarea>
+                
                 <input type="hidden" name="_to" value="gamers2asd@gmail.com">
-                <button type="submit" id="submit-btn" class="btn-primary">ENVIAR CONSULTA</button>
+                <button type="submit" id="submit-btn" class="btn-primary" style="box-shadow: 0 4px 15px rgba(0, 243, 255, 0.3);">ENVIAR CORREO DIRECTO</button>
             </form>
             <div id="form-status" style="display: none; margin-top: 15px; padding: 15px; border-radius: 10px; text-align: center; font-size: 13px;"></div>
         </div>
@@ -678,14 +738,20 @@
             event.target.value = "";
         }
 
+        let selectedDenom = 'auto';
+
+        function setDenom(val, btn) {
+            selectedDenom = val;
+            document.querySelectorAll('.btn-denom').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
         function parseOCRText(text, colorDenom) {
             let series = "";
             let serial = "";
 
-            // COLOR ES LA FUENTE PRIMARIA DE DENOMINACIÓN (instantáneo y preciso)
-            // OCR de números para denominación eliminado: "50" puede aparecer en el año o texto del billete
-            // causando falsos positivos (ej: billete de 10 reconocido como 50)
-            let denom = colorDenom || "Desconocido";
+            // PRIORIDAD: Selección manual > Detección automática de color
+            let denom = selectedDenom !== 'auto' ? selectedDenom : (colorDenom || "Desconocido");
 
             // El USUARIO solicitó ESTRICTAMENTE: 8 a 9 dígitos, UN ESPACIO, y luego la Letra (A, B o C)
             // Ejemplo: "078510389 B" (permitimos \s* en vez de \s+ por si la cámara rápida borronea el espacio pero las letras están separadas visualmente)
