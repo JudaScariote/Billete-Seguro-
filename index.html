@@ -264,6 +264,7 @@
 
         <div class="scan-badge">
             <p id="status-label">Cargando Inteligencia Artificial...</p>
+            <button id="camera-retry-btn" onclick="startScanner()" style="display: none; margin-top: 10px; background: var(--primary); color: #000; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 800; font-size: 11px; cursor: pointer;">ACTIVAR CÁMARA</button>
         </div>
     </div>
 
@@ -510,11 +511,11 @@
             const ctx = canvas.getContext('2d');
 
             try {
-                // Constraints simplificadas para máxima compatibilidad en móviles
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment" } 
                 });
                 video.srcObject = stream;
+                document.getElementById('camera-retry-btn').style.display = 'none';
                 
                 video.onloadedmetadata = () => {
                     video.play();
@@ -522,7 +523,8 @@
                 };
             } catch (err) {
                 console.error("Error cámara:", err);
-                document.getElementById('status-label').innerText = "Cámara no detectada";
+                document.getElementById('status-label').innerText = "Cámara bloqueada o no detectada";
+                document.getElementById('camera-retry-btn').style.display = 'inline-block';
             }
         }
 
