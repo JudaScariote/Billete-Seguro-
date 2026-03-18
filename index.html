@@ -246,7 +246,7 @@
 
         #reader__dashboard { display: none !important; }
     </style>
-    <script src="./tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="series_db.js"></script>
 </head>
 
@@ -477,19 +477,20 @@
             try {
                 document.getElementById('status-label').innerText = "Iniciando OCR...";
                 
-                // Inicialización ultra-robusta de Tesseract.js v5
-                // Usamos CDN para el motor (worker/wasm) para evitar errores de variantes (SIMD/LSTM)
-                // Usamos ruta local para el archivo de lenguaje (12MB)
-                const localPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-                ocrWorker = await Tesseract.createWorker({
-                    langPath: localPath,
-                    gzip: true,
+                // Inicialización ultra-robusta de Tesseract.js v5 vía CDN
+                // Esto garantiza que el motor y los wasm se carguen correctamente
+                ocrWorker = await Tesseract.createWorker('eng', 1, {
                     logger: m => {
                         if (m.status === 'initializing api') {
                             document.getElementById('status-label').innerText = "Preparando IA...";
                         }
                     }
                 });
+
+                // No necesitamos setear paths manuales si usamos la versión CDN nativa
+                // pero sí debemos cargar e inicializar
+                // En v5, si pasamos 'eng' al createWorker, ya suele estar casi listo,
+                // pero estos pasos garantizan que el motor LSTM esté activo.
 
                 await ocrWorker.loadLanguage('eng');
                 await ocrWorker.initialize('eng');
